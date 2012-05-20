@@ -34,6 +34,16 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_PATH', 'includedPath');
 define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactory');
 
 /**
+ * Option: whether to use the same set of options for the reader of an included
+ * XML file.
+ *
+ * Possible values:
+ * - TRUE (default)
+ * - FALSE
+ */
+define('XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS', 'includedUseSameOptions');
+
+/**
  * Main implementation of XML structured array parser.
  *
  * XMLStructReader can be used to read an XML into an array, optionally with
@@ -41,16 +51,76 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactor
  */
 class XMLStructReader {
   /**
-   * Reader options.
+   * Reader default options.
    */
-  protected $options = array(
+  protected $defaultOptions = array(
     // Specify default options as documented.
     XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
     XML_STRUCT_READER_OPTION_INCLUDED_PATH => '.',
     XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
+    XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
   );
 
-  // TODO
+  /**
+   * Reader options.
+   * @var array
+   */
+  protected $options;
+
+  /**
+   * XML parser handle.
+   * @var resource
+   */
+  protected $parser;
+
+  /**
+   * Creates a reader with options.
+   *
+   * @param array $options
+   *   Options for the reader. For possible option keys, see self::setOption().
+   */
+  public function __construct(array $options = array()) {
+    $this->options = $this->defaultOptions;
+    $this->setOptions($options);
+    $this->setUp();
+  }
+
+  /**
+   * Sets an option on the reader.
+   *
+   * @param $option
+   *   An option name. Possible values:
+   *   - XML_STRUCT_READER_OPTION_INCLUDED_LOAD
+   *   - XML_STRUCT_READER_OPTION_INCLUDED_PATH
+   *   - XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY
+   * @param mixed $value
+   *   - Option value.
+   */
+  public function setOption($option, $value) {
+    if (array_key_exists($option, $this->defaultOptions)) {
+      $this->options[$option] = $value;
+    }
+  }
+
+  /**
+   * Sets a number of option on the reader.
+   *
+   * @param array $options
+   *   Options to set. For possible option keys, see self::setOption().
+   */
+  public function setOptions(array $options) {
+    foreach ($options as $option => $value) {
+      $this->setOption($option, $value);
+    }
+  }
+
+  /**
+   * Sets up the created parser.
+   */
+  protected function setUp() {
+    $this->parser = xml_parser_create_ns();
+    xml_set_object($this->parser, $this);
+  }
 }
 
 /**
@@ -58,8 +128,8 @@ class XMLStructReader {
  */
 class XMLStructReaderFactory {
   /**
-   * Creates a reader with options. See README.txt for a complete list of
-   * options to initialize with.
+   * Creates a reader with options. See XMLStructReader::__construct() for a
+   * list of options to initialize with.
    *
    * @param array $options
    *   Options for the reader.
