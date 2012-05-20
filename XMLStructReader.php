@@ -1,5 +1,9 @@
 <?php
 /**
+ * Default base path for included file names.
+ */
+define('XML_STRUCT_READER_INCLUDED_PATH', '.');
+/**
  * Default included file reader class.
  */
 define('XML_STRUCT_READER_INCLUDED_READER_CLASS', 'XMLStructReader');
