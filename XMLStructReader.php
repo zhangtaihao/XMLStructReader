@@ -9,19 +9,29 @@
  */
 
 /**
- * Whether to load included file by default.
+ * Option: whether to load included file.
+ *
+ * Possible values:
+ * - TRUE
+ * - FALSE (default)
  */
-define('XML_STRUCT_READER_LOAD_INCLUDED', FALSE);
+define('XML_STRUCT_READER_OPTION_INCLUDED_LOAD', 'includedLoad');
 
 /**
  * Default base path for included file names.
+ *
+ * Possible values:
+ * - Any valid directory path string. Default: . (current working directory)
  */
-define('XML_STRUCT_READER_INCLUDED_PATH', '.');
+define('XML_STRUCT_READER_OPTION_INCLUDED_PATH', 'includedPath');
 
 /**
- * Default factory class to create reader for included files.
+ * Factory class to create reader for included files.
+ *
+ * Possible values:
+ * - Any valid findable class name. Default: XMLStructReaderFactory
  */
-define('XML_STRUCT_READER_INCLUDED_READER_FACTORY', 'XMLStructReaderFactory');
+define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactory');
 
 /**
  * Main implementation of XML structured array parser.
@@ -30,6 +40,16 @@ define('XML_STRUCT_READER_INCLUDED_READER_FACTORY', 'XMLStructReaderFactory');
  * annotations on the document itself to adjust the resulting structure.
  */
 class XMLStructReader {
+  /**
+   * Reader options.
+   */
+  protected $options = array(
+    // Specify default options as documented.
+    XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
+    XML_STRUCT_READER_OPTION_INCLUDED_PATH => '.',
+    XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
+  );
+
   // TODO
 }
 
