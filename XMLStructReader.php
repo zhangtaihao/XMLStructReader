@@ -9,6 +9,11 @@
  */
 
 /**
+ * Whether to load included file by default.
+ */
+define('XML_STRUCT_READER_LOAD_INCLUDED', FALSE);
+
+/**
  * Default base path for included file names.
  */
 define('XML_STRUCT_READER_INCLUDED_PATH', '.');
