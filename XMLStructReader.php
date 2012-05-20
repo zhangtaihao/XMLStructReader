@@ -1,5 +1,14 @@
 <?php
 /**
+ * XML structured array parser.
+ *
+ * @package  XMLStructArray
+ * @author   Taihao Zhang <jason@zth.me>
+ * @license  GNU General Public License v3.0
+ * @license  LICENSE.txt
+ */
+
+/**
  * Default base path for included file names.
  */
 define('XML_STRUCT_READER_INCLUDED_PATH', '.');
@@ -9,13 +18,10 @@ define('XML_STRUCT_READER_INCLUDED_PATH', '.');
 define('XML_STRUCT_READER_INCLUDED_READER_CLASS', 'XMLStructReader');
 
 /**
- * XML structured array parser.
+ * Main implementation of XML structured array parser.
  *
  * XMLStructReader can be used to read an XML into an array, optionally with
  * annotations on the document itself to adjust the resulting structure.
- *
- * @package  XMLStructArray
- * @author   Taihao Zhang <jason@zth.me>
  */
 class XMLStructReader {
   // TODO
@@ -25,9 +31,7 @@ class XMLStructReader {
  * File delegate for handling operations across a file resource and a
  * SplFileObject instance.
  *
- * @package     XMLStructArray
  * @subpackage  Utility
- * @author      Taihao Zhang <jason@zth.me>
  */
 class XMLStructReader_FileDelegate {
   /**
