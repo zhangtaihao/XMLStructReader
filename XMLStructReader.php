@@ -12,10 +12,11 @@
  * Default base path for included file names.
  */
 define('XML_STRUCT_READER_INCLUDED_PATH', '.');
+
 /**
- * Default included file reader class.
+ * Default factory class to create reader for included files.
  */
-define('XML_STRUCT_READER_INCLUDED_READER_CLASS', 'XMLStructReader');
+define('XML_STRUCT_READER_INCLUDED_READER_FACTORY', 'XMLStructReaderFactory');
 
 /**
  * Main implementation of XML structured array parser.
@@ -25,6 +26,24 @@ define('XML_STRUCT_READER_INCLUDED_READER_CLASS', 'XMLStructReader');
  */
 class XMLStructReader {
   // TODO
+}
+
+/**
+ * Factory class for creating a reader.
+ */
+class XMLStructReaderFactory {
+  /**
+   * Creates a reader with options. See README.txt for a complete list of
+   * options to initialize with.
+   *
+   * @param array $options
+   *   Options for the reader.
+   * @param XMLStructReader $owner
+   *   Owner object for the new reader instance.
+   */
+  public function createReader(array $options = array(), $owner = NULL) {
+    // TODO
+  }
 }
 
 /**
