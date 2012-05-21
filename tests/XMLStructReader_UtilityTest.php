@@ -1,4 +1,7 @@
 <?php
+
+require_once 'XMLStructReader.php';
+
 /**
  * Stream delegate utility test.
  */
@@ -7,18 +10,25 @@ class XMLStructReader_StreamDelegateTest extends PHPUnit_Framework_TestCase {
   protected $fileObject;
 
   protected function setUp() {
-    require_once 'XMLStructReader.php';
     $this->fileResource = fopen('tests/basic.xml', 'r');
     $this->fileObject = new SplFileObject('tests/basic.xml');
   }
 
+  protected function createResourceDelegate() {
+    return new XMLStructReader_StreamDelegate($this->fileResource);
+  }
+
+  protected function createObjectDelegate() {
+    return new XMLStructReader_StreamDelegate($this->fileObject);
+  }
+
   public function testCreateResourceDelegate() {
-    $delegate = new XMLStructReader_StreamDelegate($this->fileResource);
+    $delegate = $this->createResourceDelegate();
     $this->assertTrue($delegate->isResource(), 'A delegate is created for a file resource.');
   }
 
   public function testCreateObjectDelegate() {
-    $delegate = new XMLStructReader_StreamDelegate($this->fileObject);
+    $delegate = $this->createObjectDelegate();
     $this->assertTrue($delegate->isObject(), 'A delegate is created for a file object.');
   }
 
