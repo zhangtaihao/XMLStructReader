@@ -44,77 +44,6 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactor
 define('XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS', 'includedUseSameOptions');
 
 /**
- * Factory class for creating a reader.
- */
-class XMLStructReaderFactory {
-  /**
-   * Parsing context to include with created readers.
-   * @var array
-   */
-  protected $context;
-
-  /**
-   * Reader that owns this factory.
-   * @var XMLStructReader
-   */
-  protected $owner;
-
-  /**
-   * Constructs a reader factory.
-   *
-   * @param XMLStructReader $owner
-   *   Owner object creating this factory.
-   * @param array $context
-   *   Parse context for the reader. Used internally to specify metadata about
-   *   the base context to use when parsing with the created reader.
-   */
-  public function __construct($owner = NULL, array $context = array()) {
-    if (isset($owner)) {
-      if (!is_object($owner) || !$owner instanceof XMLStructReader) {
-        throw new InvalidArgumentException('Owner is not a valid object.');
-      }
-      $this->owner = $owner;
-    }
-    $this->context = $context;
-  }
-
-  /**
-   * Creates a reader with options. See XMLStructReader::setOption() for a list
-   * of options to initialize with.
-   *
-   * @param mixed $file
-   *   Path to an XML file, a stream resource, or an SplFileObject instance.
-   * @param array $options
-   *   Options for the reader.
-   * @return XMLStructReader
-   *   Created reader.
-   */
-  public function createReader($file, array $options = array()) {
-    $delegate = $this->createStreamDelegate($file);
-    $reader = new XMLStructReader($delegate, $options, $this->context);
-    return $reader;
-  }
-
-  /**
-   * Creates a stream delegate.
-   *
-   * @param mixed $file
-   *   Path to an XML file, a stream resource, or an SplFileObject instance.
-   * @return XMLStructReader_StreamDelegate
-   *   Stream delegate for the given parameter.
-   */
-  protected function createStreamDelegate($file) {
-    if (is_string($file) && file_exists($file)) {
-      // Transform file path into file object.
-      $file = new SplFileObject($file);
-    }
-    // Create the delegate.
-    $delegate = new XMLStructReader_StreamDelegate($file);
-    return $delegate;
-  }
-}
-
-/**
  * Main implementation of XML structured array parser.
  *
  * XMLStructReader can be used to read an XML into an array, optionally with
@@ -294,6 +223,77 @@ class XMLStructReader {
  */
 interface XMLStructReaderInterpreter {
   // TODO
+}
+
+/**
+ * Factory class for creating a reader.
+ */
+class XMLStructReaderFactory {
+  /**
+   * Parsing context to include with created readers.
+   * @var array
+   */
+  protected $context;
+
+  /**
+   * Reader that owns this factory.
+   * @var XMLStructReader
+   */
+  protected $owner;
+
+  /**
+   * Constructs a reader factory.
+   *
+   * @param XMLStructReader $owner
+   *   Owner object creating this factory.
+   * @param array $context
+   *   Parse context for the reader. Used internally to specify metadata about
+   *   the base context to use when parsing with the created reader.
+   */
+  public function __construct($owner = NULL, array $context = array()) {
+    if (isset($owner)) {
+      if (!is_object($owner) || !$owner instanceof XMLStructReader) {
+        throw new InvalidArgumentException('Owner is not a valid object.');
+      }
+      $this->owner = $owner;
+    }
+    $this->context = $context;
+  }
+
+  /**
+   * Creates a reader with options. See XMLStructReader::setOption() for a list
+   * of options to initialize with.
+   *
+   * @param mixed $file
+   *   Path to an XML file, a stream resource, or an SplFileObject instance.
+   * @param array $options
+   *   Options for the reader.
+   * @return XMLStructReader
+   *   Created reader.
+   */
+  public function createReader($file, array $options = array()) {
+    $delegate = $this->createStreamDelegate($file);
+    $reader = new XMLStructReader($delegate, $options, $this->context);
+    return $reader;
+  }
+
+  /**
+   * Creates a stream delegate.
+   *
+   * @param mixed $file
+   *   Path to an XML file, a stream resource, or an SplFileObject instance.
+   * @return XMLStructReader_StreamDelegate
+   *   Stream delegate for the given parameter.
+   */
+  protected function createStreamDelegate($file) {
+    if (is_string($file) && file_exists($file)) {
+      // Transform file path into file object.
+      $file = new SplFileObject($file);
+    }
+    // Create the delegate.
+    $delegate = new XMLStructReader_StreamDelegate($file);
+    return $delegate;
+  }
 }
 
 /**
