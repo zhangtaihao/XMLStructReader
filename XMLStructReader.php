@@ -110,7 +110,7 @@ class XMLStructReader {
   protected $defaultOptions = array(
     // Specify default options as documented.
     XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
-    XML_STRUCT_READER_OPTION_INCLUDED_PATH => '.',
+    XML_STRUCT_READER_OPTION_INCLUDED_PATH => NULL,
     XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
     XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
   );
