@@ -179,6 +179,7 @@ class XMLStructReader {
    */
   protected function createParser() {
     $parser = xml_parser_create_ns();
+    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
     xml_set_object($parser, $this);
     xml_set_element_handler($parser, 'startElement', 'endElement');
     xml_set_character_data_handler($parser, 'characterData');
