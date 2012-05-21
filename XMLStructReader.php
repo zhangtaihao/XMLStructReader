@@ -150,6 +150,23 @@ class XMLStructReader {
   }
 
   /**
+   * Sets up the created parser.
+   */
+  protected function setUp() {
+    $this->parser = xml_parser_create_ns();
+    xml_set_object($this->parser, $this);
+    xml_set_element_handler($this->parser, 'startElement', 'endElement');
+    xml_set_character_data_handler($this->parser, 'characterData');
+  }
+
+  /**
+   * Frees resources.
+   */
+  public function __destruct() {
+    @xml_parser_free($this->parser);
+  }
+
+  /**
    * Sets an option on the reader.
    *
    * @param $option
@@ -194,16 +211,6 @@ class XMLStructReader {
    */
   public function setContext(array $context) {
     $this->context = $context;
-  }
-
-  /**
-   * Sets up the created parser.
-   */
-  protected function setUp() {
-    $this->parser = xml_parser_create_ns();
-    xml_set_object($this->parser, $this);
-    xml_set_element_handler($this->parser, 'startElement', 'endElement');
-    xml_set_character_data_handler($this->parser, 'characterData');
   }
 
   /**
