@@ -202,6 +202,29 @@ class XMLStructReader {
   protected function setUp() {
     $this->parser = xml_parser_create_ns();
     xml_set_object($this->parser, $this);
+    xml_set_element_handler($this->parser, 'startElement', 'endElement');
+    xml_set_character_data_handler($this->parser, 'characterData');
+  }
+
+  /**
+   * Handles element start.
+   */
+  public function startElement($parser, $name, array $attributes) {
+    // TODO
+  }
+
+  /**
+   * Handles character data.
+   */
+  public function characterData($parser, $name, array $attributes) {
+    // TODO
+  }
+
+  /**
+   * Handles element end.
+   */
+  public function endElement($parser, $name) {
+    // TODO
   }
 }
 
