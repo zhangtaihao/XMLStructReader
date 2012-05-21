@@ -83,14 +83,34 @@ class XMLStructReaderFactory {
    * of options to initialize with.
    *
    * @param mixed $file
-   *   A stream resource or an SplFileObject instance.
+   *   Path to an XML file, a stream resource, or an SplFileObject instance.
    * @param array $options
    *   Options for the reader.
    * @return XMLStructReader
    *   Created reader.
    */
   public function createReader($file, array $options = array()) {
-    // TODO
+    $delegate = $this->createStreamDelegate($file);
+    $reader = new XMLStructReader($delegate, $options, $this->context);
+    return $reader;
+  }
+
+  /**
+   * Creates a stream delegate.
+   *
+   * @param mixed $file
+   *   Path to an XML file, a stream resource, or an SplFileObject instance.
+   * @return XMLStructReader_StreamDelegate
+   *   Stream delegate for the given parameter.
+   */
+  protected function createStreamDelegate($file) {
+    if (is_string($file) && file_exists($file)) {
+      // Transform file path into file object.
+      $file = new SplFileObject($file);
+    }
+    // Create the delegate.
+    $delegate = new XMLStructReader_StreamDelegate($file);
+    return $delegate;
   }
 }
 
@@ -118,6 +138,12 @@ class XMLStructReader {
   );
 
   /**
+   * File delegate to parse.
+   * @var XMLStructReader_StreamDelegate
+   */
+  protected $fileDelegate;
+
+  /**
    * Reader options.
    * @var array
    */
@@ -138,13 +164,16 @@ class XMLStructReader {
   /**
    * Creates a reader with options.
    *
+   * @param XMLStructReader_StreamDelegate $fileDelegate
+   *   Delegate object for a file to parse.
    * @param array $options
    *   Options for the reader. For possible option keys, see self::setOption().
    * @param array $context
    *   Parse context for the reader. Used internally to specify metadata about
    *   the base context to use when parsing with the created reader.
    */
-  public function __construct(array $options = array(), array $context = array()) {
+  public function __construct($fileDelegate, array $options = array(), array $context = array()) {
+    $this->fileDelegate = $fileDelegate;
     $this->options = $this->defaultOptions;
     $this->setOptions($options);
     $this->setContext($context);
@@ -161,7 +190,10 @@ class XMLStructReader {
   /**
    * Sets up the created parser.
    */
-  protected function setUp() {}
+  protected function setUp() {
+    // Set up parser.
+    $this->parser = $this->createParser();
+  }
 
   /**
    * Cleans up the object.
@@ -222,16 +254,6 @@ class XMLStructReader {
     xml_set_element_handler($parser, 'startElement', 'endElement');
     xml_set_character_data_handler($parser, 'characterData');
     return $parser;
-  }
-
-  /**
-   * Resets the reader.
-   */
-  protected function resetReader() {
-    // Reset the parser and associated options.
-    $this->cleanUp();
-    // Set options a new reader.
-    $this->parser = $this->createParser();
   }
 
   /**
