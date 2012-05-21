@@ -209,10 +209,17 @@ class XMLStructReader {
       throw new RuntimeException('Data could not be read.');
     }
 
-    // TODO Read data.
-    $data = array();
+    // Read data.
+    while (!$this->fileDelegate->isEOF()) {
+      $line = $this->fileDelegate->readLine();
+      if (!xml_parse($this->parser, $line)) {
+        throw new XMLStructReaderException('Error while parsing: ' . xml_error_string(xml_get_error_code($this->parser)));
+      }
+    }
     $this->cleanUp();
-    return $data;
+
+    // TODO
+    return array();
   }
 
   /**
@@ -317,6 +324,11 @@ class XMLStructReaderFactory {
 }
 
 /**
+ * Generic exception during typical reader usage.
+ */
+class XMLStructReaderException extends Exception {}
+
+/**
  * Delegate for handling stream operations uniformly across a resource handle
  * and a SplFileObject instance.
  *
@@ -365,5 +377,23 @@ class XMLStructReader_StreamDelegate {
    */
   public function isObject() {
     return isset($this->object);
+  }
+
+  /**
+   * Determines whether end of file has been reached.
+   * @return boolean
+   */
+  public function isEOF() {
+    return isset($this->object) ? $this->object->eof() : feof($this->resource);
+  }
+
+  /**
+   * Reads a line from the stream.
+   *
+   * @return string
+   *   The line read from the file, or FALSE on error.
+   */
+  public function readLine() {
+    return isset($this->object) ? $this->object->fgets() : fgets($this->resource);
   }
 }
