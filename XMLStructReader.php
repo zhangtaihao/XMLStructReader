@@ -150,14 +150,14 @@ class XMLStructReaderFactory {
 }
 
 /**
- * File delegate for handling operations across a file resource and a
- * SplFileObject instance.
+ * Delegate for handling stream operations uniformly across a resource handle
+ * and a SplFileObject instance.
  *
  * @subpackage  Utility
  */
-class XMLStructReader_FileDelegate {
+class XMLStructReader_StreamDelegate {
   /**
-   * File resource handle.
+   * Stream resource handle.
    * @var resource
    */
   protected $resource;
@@ -178,8 +178,7 @@ class XMLStructReader_FileDelegate {
     if (is_resource($file) && get_resource_type($file) == 'stream') {
       $this->resource = $file;
     }
-    elseif (class_exists('SplFileObject') && is_object($file) && $file
-        instanceof SplFileObject) {
+    elseif (is_object($file) && class_exists('SplFileObject') && $file instanceof SplFileObject) {
       $this->object = $file;
     }
   }
