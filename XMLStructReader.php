@@ -201,6 +201,14 @@ class XMLStructReaderFactory {
 }
 
 /**
+ * Interface for a specific behavior in the reader responsible for interpreting
+ * annotations on the XML tree.
+ */
+interface XMLStructReaderInterpreter {
+  // TODO
+}
+
+/**
  * Delegate for handling stream operations uniformly across a resource handle
  * and a SplFileObject instance.
  *
