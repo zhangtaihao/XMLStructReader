@@ -249,4 +249,18 @@ class XMLStructReader_StreamDelegate {
       throw new InvalidArgumentException('File parameter is not recognized.');
     }
   }
+
+  /**
+   * Determines whether a resource is wrapped.
+   */
+  public function isResource() {
+    return isset($this->resource);
+  }
+
+  /**
+   * Determines whether a file object is wrapped.
+   */
+  public function isObject() {
+    return isset($this->object);
+  }
 }
