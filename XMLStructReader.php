@@ -116,6 +116,13 @@ class XMLStructReader {
   }
 
   /**
+   * Resets all options to default.
+   */
+  public function resetOptions() {
+    $this->setOptions($this->defaultOptions);
+  }
+
+  /**
    * Sets up the created parser.
    */
   protected function setUp() {
