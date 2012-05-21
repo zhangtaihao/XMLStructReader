@@ -82,12 +82,14 @@ class XMLStructReaderFactory {
    * Creates a reader with options. See XMLStructReader::setOption() for a list
    * of options to initialize with.
    *
+   * @param mixed $file
+   *   A stream resource or an SplFileObject instance.
    * @param array $options
    *   Options for the reader.
    * @return XMLStructReader
    *   Created reader.
    */
-  public function createReader(array $options = array()) {
+  public function createReader($file, array $options = array()) {
     // TODO
   }
 }
