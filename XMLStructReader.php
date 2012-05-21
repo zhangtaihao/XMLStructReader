@@ -100,6 +100,11 @@ class XMLStructReaderFactory {
  */
 class XMLStructReader {
   /**
+   * Namespace URI.
+   */
+  const NS = 'http://xml.zth.me/XMLStructReader/';
+
+  /**
    * Reader default options.
    */
   protected $defaultOptions = array(
