@@ -150,20 +150,25 @@ class XMLStructReader {
   }
 
   /**
-   * Sets up the created parser.
-   */
-  protected function setUp() {
-    $this->parser = xml_parser_create_ns();
-    xml_set_object($this->parser, $this);
-    xml_set_element_handler($this->parser, 'startElement', 'endElement');
-    xml_set_character_data_handler($this->parser, 'characterData');
-  }
-
-  /**
    * Frees resources.
    */
   public function __destruct() {
-    @xml_parser_free($this->parser);
+    $this->cleanUp();
+  }
+
+  /**
+   * Sets up the created parser.
+   */
+  protected function setUp() {}
+
+  /**
+   * Cleans up the object.
+   */
+  protected function cleanUp() {
+    if (isset($this->parser)) {
+      @xml_parser_free($this->parser);
+      $this->parser = NULL;
+    }
   }
 
   /**
@@ -201,6 +206,30 @@ class XMLStructReader {
    */
   public function resetOptions() {
     $this->setOptions($this->defaultOptions);
+  }
+
+  /**
+   * Creates a new parser for use with this object.
+   *
+   * @return resource
+   *   Handle to the parser.
+   */
+  protected function createParser() {
+    $parser = xml_parser_create_ns();
+    xml_set_object($parser, $this);
+    xml_set_element_handler($parser, 'startElement', 'endElement');
+    xml_set_character_data_handler($parser, 'characterData');
+    return $parser;
+  }
+
+  /**
+   * Resets the reader.
+   */
+  protected function resetReader() {
+    // Reset the parser and associated options.
+    $this->cleanUp();
+    // Set options a new reader.
+    $this->parser = $this->createParser();
   }
 
   /**
