@@ -44,6 +44,55 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactor
 define('XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS', 'includedUseSameOptions');
 
 /**
+ * Factory class for creating a reader.
+ */
+class XMLStructReaderFactory {
+  /**
+   * Parsing context to include with created readers.
+   * @var array
+   */
+  protected $context;
+
+  /**
+   * Reader that owns this factory.
+   * @var XMLStructReader
+   */
+  protected $owner;
+
+  /**
+   * Constructs a reader factory.
+   *
+   * @param XMLStructReader $owner
+   *   Owner object creating this factory.
+   * @param array $context
+   *   Parse context for the reader. Used internally to specify metadata about
+   *   the base context to use when parsing with the created reader.
+   */
+  public function __construct($owner = NULL, array $context = array()) {
+    if (isset($owner)) {
+      if (!is_object($owner) || !$owner instanceof XMLStructReader) {
+        throw new Exception('Owner is not a valid object.');
+      }
+      $this->owner = $owner;
+    }
+    $this->context = $context;
+  }
+
+  /**
+   * Creates a reader with options. See XMLStructReader::setOption() for a list
+   * of options to initialize with.
+   *
+   * @param array $options
+   *   Options for the reader.
+   * @return XMLStructReader
+   *   Created reader.
+   */
+  public function createReader(array $options = array()) {
+    // TODO
+  }
+}
+
+/**
  * Main implementation of XML structured array parser.
  *
  * XMLStructReader can be used to read an XML into an array, optionally with
@@ -148,55 +197,6 @@ class XMLStructReader {
   protected function setUp() {
     $this->parser = xml_parser_create_ns();
     xml_set_object($this->parser, $this);
-  }
-}
-
-/**
- * Factory class for creating a reader.
- */
-class XMLStructReaderFactory {
-  /**
-   * Parsing context to include with created readers.
-   * @var array
-   */
-  protected $context;
-
-  /**
-   * Reader that owns this factory.
-   * @var XMLStructReader
-   */
-  protected $owner;
-
-  /**
-   * Constructs a reader factory.
-   *
-   * @param XMLStructReader $owner
-   *   Owner object creating this factory.
-   * @param array $context
-   *   Parse context for the reader. Used internally to specify metadata about
-   *   the base context to use when parsing with the created reader.
-   */
-  public function __construct($owner = NULL, array $context = array()) {
-    if (isset($owner)) {
-      if (!is_object($owner) || !$owner instanceof XMLStructReader) {
-        throw new Exception('Owner is not a valid object.');
-      }
-      $this->owner = $owner;
-    }
-    $this->context = $context;
-  }
-
-  /**
-   * Creates a reader with options. See XMLStructReader::setOption() for a list
-   * of options to initialize with.
-   *
-   * @param array $options
-   *   Options for the reader.
-   * @return XMLStructReader
-   *   Created reader.
-   */
-  public function createReader(array $options = array()) {
-    // TODO
   }
 }
 
