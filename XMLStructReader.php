@@ -233,7 +233,7 @@ class XMLStructReader {
   /**
    * Handles character data.
    */
-  public function characterData($parser, $name, array $attributes) {
+  public function characterData($parser, $data) {
     // TODO
   }
 
