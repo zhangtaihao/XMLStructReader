@@ -5,4 +5,4 @@ XMLStructReader is a PHP utility for reading XML specifying a PHP structured
 array.
 
 The library uses the built-in XML Parser for XML parsing tasks. The minimum
-requirement is PHP 5.
+requirements are PHP 5.1.0 and the SPL extension (enabled by default).

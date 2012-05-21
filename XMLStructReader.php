@@ -71,7 +71,7 @@ class XMLStructReaderFactory {
   public function __construct($owner = NULL, array $context = array()) {
     if (isset($owner)) {
       if (!is_object($owner) || !$owner instanceof XMLStructReader) {
-        throw new Exception('Owner is not a valid object.');
+        throw new InvalidArgumentException('Owner is not a valid object.');
       }
       $this->owner = $owner;
     }
@@ -242,8 +242,11 @@ class XMLStructReader_StreamDelegate {
     if (is_resource($file) && get_resource_type($file) == 'stream') {
       $this->resource = $file;
     }
-    elseif (is_object($file) && class_exists('SplFileObject') && $file instanceof SplFileObject) {
+    elseif (is_object($file) && $file instanceof SplFileObject) {
       $this->object = $file;
+    }
+    else {
+      throw new InvalidArgumentException('File parameter is not recognized.');
     }
   }
 }
