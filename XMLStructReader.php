@@ -196,6 +196,26 @@ class XMLStructReader {
   }
 
   /**
+   * Reads an array from the stream.
+   *
+   * @return array
+   *   Structured array.
+   * @throws RuntimeException
+   *   If no data could be read.
+   */
+  public function read() {
+    // Check data can be read.
+    if (!isset($this->parser)) {
+      throw new RuntimeException('Data could not be read.');
+    }
+
+    // TODO Read data.
+    $data = array();
+    $this->cleanUp();
+    return $data;
+  }
+
+  /**
    * Handles element start.
    */
   public function startElement($parser, $name, array $attributes) {
