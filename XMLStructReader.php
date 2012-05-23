@@ -246,14 +246,6 @@ class XMLStructReader {
 }
 
 /**
- * Interface for a specific behavior in the reader responsible for interpreting
- * annotations on the XML tree.
- */
-interface XMLStructReaderInterpreter {
-  // TODO
-}
-
-/**
  * Factory class for creating a reader.
  */
 class XMLStructReaderFactory {
@@ -328,6 +320,47 @@ class XMLStructReaderFactory {
  * Generic exception during typical reader usage.
  */
 class XMLStructReaderException extends Exception {}
+
+/**
+ * Base interpreter factory for the default namespace.
+ */
+interface XMLStructReader_InterpreterFactory {
+  /**
+   * Returns the namespace to interpret in.
+   *
+   * @return string|null
+   *   URI of the namespace, or NULL if no specific namespace.
+   */
+  public function getNamespace();
+}
+
+/**
+ * Factory interface for creating an interpreter for processing an element.
+ */
+interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_InterpreterFactory {
+  /**
+   * Returns the name of the element to interpret.
+   *
+   * @return string
+   *   Name of the XML element, or an asterisk ('*') if all elements not
+   *   interpreted by other interpreters are processed.
+   */
+  public function getElementName();
+}
+
+/**
+ * Factory interface for creating an interpreter for processing an attribute.
+ */
+interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_InterpreterFactory {
+  /**
+   * Returns the name of the attribute to interpret.
+   *
+   * @return string|null
+   *   Name of the XML attribute, or an asterisk ('*') if all attributes not
+   *   interpreted by other interpreters are processed.
+   */
+  public function getAttributeName();
+}
 
 /**
  * Delegate for handling stream operations uniformly across a resource handle
