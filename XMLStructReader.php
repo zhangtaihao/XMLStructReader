@@ -192,6 +192,16 @@ class XMLStructReader {
    * @param array $context
    *   Context to use.
    */
+  public function getContext() {
+    return $this->context;
+  }
+
+  /**
+   * Sets the reader context.
+   *
+   * @param array $context
+   *   Context to use.
+   */
   public function setContext(array $context) {
     $this->context = $context;
   }
@@ -227,7 +237,29 @@ class XMLStructReader {
    * Handles element start.
    */
   public function startElement($parser, $name, array $attributes) {
-    // TODO
+    // Derive namespace and element name.
+    $namespace = NULL;
+    $elementName = $name;
+    if (FALSE !== $separatorPos = strrpos($name, ':')) {
+      $namespace = substr($name, 0, $separatorPos);
+      $elementName = substr($name, $separatorPos + 1);
+    }
+
+    // TODO Determine parent element.
+
+    // TODO Look up element interpreter factory.
+
+    // TODO Create interpreter with parent.
+
+    // Process attributes.
+    foreach ($attributes as $attrName => $attrValue) {
+
+      // TODO Look up attribute interpreter factory.
+
+      // TODO Create attribute interpreter for element.
+
+      // TODO
+    }
   }
 
   /**
@@ -242,6 +274,36 @@ class XMLStructReader {
    */
   public function endElement($parser, $name) {
     // TODO
+  }
+
+  /**
+   * Looks up an element interpreter factory.
+   *
+   * @param string $name
+   *   Element name.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if the element has no namespace.
+   * @return XMLStructReader_ElementInterpreterFactory
+   *   Element interpreter factory.
+   */
+  protected function getElementInterpreterFactory($name, $namespace = NULL) {
+    // TODO
+    return NULL;
+  }
+
+  /**
+   * Looks up an attribute interpreter factory.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if the attribute has no namespace.
+   * @return XMLStructReader_AttributeInterpreterFactory
+   *   Attribute interpreter factory.
+   */
+  protected function getAttributeInterpreterFactory($name, $namespace = NULL) {
+    // TODO
+    return NULL;
   }
 }
 
