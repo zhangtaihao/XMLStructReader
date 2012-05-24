@@ -75,7 +75,7 @@ abstract class XMLStructReader {
 
   /**
    * Reader context when parsing.
-   * @var array
+   * @var XMLStructReaderContext
    */
   protected $context;
 
@@ -92,14 +92,17 @@ abstract class XMLStructReader {
    *   Delegate object for a file to parse.
    * @param array $options
    *   Options for the reader.
-   * @param array $context
+   * @param XMLStructReaderContext $context
    *   Parse context for the reader. Used internally to specify metadata about
    *   the base context to use when parsing with the created reader.
    */
-  public function __construct($fileDelegate, array $options = array(), array $context = array()) {
+  public function __construct($fileDelegate, array $options = array(), $context = NULL) {
     $this->fileDelegate = $fileDelegate;
     $this->options = $this->defaultOptions = $this->getDefaultOptions();
     $this->setOptions($options);
+    if (!isset($context)) {
+      $context = new XMLStructReaderContext();
+    }
     $this->setContext($context);
     $this->setUp();
   }
@@ -173,9 +176,9 @@ abstract class XMLStructReader {
   }
 
   /**
-   * Sets the reader context.
+   * Gets the reader context.
    *
-   * @param array $context
+   * @param XMLStructReaderContext $context
    *   Context to use.
    */
   public function getContext() {
@@ -185,10 +188,10 @@ abstract class XMLStructReader {
   /**
    * Sets the reader context.
    *
-   * @param array $context
+   * @param XMLStructReaderContext $context
    *   Context to use.
    */
-  public function setContext(array $context) {
+  public function setContext($context) {
     $this->context = $context;
   }
 
@@ -372,34 +375,39 @@ class DefaultXMLStructReader extends XMLStructReader {
  */
 abstract class XMLStructReaderFactory {
   /**
-   * Parsing context to include with created readers.
-   * @var array
-   */
-  protected $context;
-
-  /**
    * Reader that owns this factory.
    * @var XMLStructReader
    */
   protected $owner;
 
   /**
+   * Parsing context to include with created readers.
+   * @var XMLStructReaderContext
+   */
+  protected $context;
+
+  /**
    * Constructs a reader factory.
    *
    * @param XMLStructReader $owner
    *   Owner object creating this factory.
-   * @param array $context
+   * @param XMLStructReaderContext $context
    *   Parse context for the reader. Used internally to specify metadata about
    *   the base context to use when parsing with the created reader.
    */
-  public function __construct($owner = NULL, array $context = array()) {
+  public function __construct($owner = NULL, $context = NULL) {
     if (isset($owner)) {
       if (!is_object($owner) || !$owner instanceof XMLStructReader) {
         throw new InvalidArgumentException('Owner is not a valid object.');
       }
       $this->owner = $owner;
     }
-    $this->context = $context;
+    if (isset($context)) {
+      if (!is_object($context) || !$context instanceof XMLStructReaderContext) {
+        throw new InvalidArgumentException('Context is not a valid object.');
+      }
+      $this->context = $context;
+    }
   }
 
   /**
@@ -466,6 +474,18 @@ class DefaultXMLStructReaderFactory extends XMLStructReaderFactory {
    */
   protected function createReaderFromDelegate($delegate, array $options = array()) {
     return new DefaultXMLStructReader($delegate, $options, $this->context);
+  }
+}
+
+/**
+ * Context object for accessing and storing reader state.
+ */
+class XMLStructReaderContext extends ArrayObject {
+  /**
+   * Creates a context object for access as properties.
+   */
+  public function __construct(array $data = array()) {
+    parent::__construct($data, ArrayObject::ARRAY_AS_PROPS);
   }
 }
 
