@@ -396,18 +396,23 @@ abstract class XMLStructReaderFactory {
    *   the base context to use when parsing with the created reader.
    */
   public function __construct($owner = NULL, $context = NULL) {
+    // Check owner.
     if (isset($owner)) {
       if (!is_object($owner) || !$owner instanceof XMLStructReader) {
         throw new InvalidArgumentException('Owner is not a valid object.');
       }
       $this->owner = $owner;
     }
+    // Check context.
     if (isset($context)) {
       if (!is_object($context) || !$context instanceof XMLStructReaderContext) {
         throw new InvalidArgumentException('Context is not a valid object.');
       }
-      $this->context = $context;
     }
+    elseif (isset($owner)) {
+      $context = $owner->getContext();
+    }
+    $this->context = $context;
   }
 
   /**
