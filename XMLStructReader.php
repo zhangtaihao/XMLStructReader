@@ -285,6 +285,12 @@ abstract class XMLStructReader {
  */
 class DefaultXMLStructReader extends XMLStructReader {
   /**
+   * Context stack.
+   * @var XMLStructReaderContext[]
+   */
+  protected $contextStack = array();
+
+  /**
    * Element interpreter factory registry.
    * @var XMLStructReader_ElementInterpreterFactory[]
    */
@@ -309,6 +315,29 @@ class DefaultXMLStructReader extends XMLStructReader {
       XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
       XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
     ) + parent::getDefaultOptions();
+  }
+
+  /**
+   * Pushes a context onto the stack.
+   *
+   * @param XMLStructReaderContext $context
+   *   Context object.
+   */
+  protected function pushContext($context) {
+    array_push($this->contextStack, $context);
+    $this->setContext($context);
+  }
+
+  /**
+   * Pops a context off the stack.
+   *
+   * @return XMLStructReaderContext
+   *   Removed context object.
+   */
+  protected function popContext() {
+    $context = array_pop($this->contextStack);
+    $this->setContext(end($this->contextStack));
+    return $context;
   }
 
   /**
