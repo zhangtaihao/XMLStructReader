@@ -35,6 +35,8 @@ class XMLStructReaderFactoryAPITest extends PHPUnit_Framework_TestCase {
     $factory = new TestXMLStructReaderFactory();
     $reader = $factory->createReader($file);
     $this->assertTrue(is_object($reader), 'Basic reader can be created from factory.');
+    // Simulate destructor.
+    $reader->__destruct();
   }
 
   /**
