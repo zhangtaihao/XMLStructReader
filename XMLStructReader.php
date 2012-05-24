@@ -423,7 +423,7 @@ abstract class XMLStructReaderFactory {
    */
   public function createReader($file, array $options = array()) {
     $delegate = $this->createStreamDelegate($file);
-    $reader = $this->createReaderFromDelegate($delegate, $options);
+    $reader = $this->createReaderObject($delegate, $options, $this->context);
     return $reader;
   }
 
@@ -446,16 +446,18 @@ abstract class XMLStructReaderFactory {
   }
 
   /**
-   * Creates a reader from a delegate.
+   * Creates a reader object.
    *
    * @param XMLStructReader_StreamDelegate $delegate
    *   Delegate object for a file to parse.
    * @param array $options
    *   Options for the reader.
+   * @param XMLStructReaderContext $context
+   *   Parse context for the reader.
    * @return XMLStructReader
    *   Created reader.
    */
-  abstract protected function createReaderFromDelegate($delegate, array $options = array());
+  abstract protected function createReaderObject($delegate, array $options = array(), $context = NULL);
 }
 
 /**
@@ -469,11 +471,13 @@ class DefaultXMLStructReaderFactory extends XMLStructReaderFactory {
    *   Delegate object for a file to parse.
    * @param array $options
    *   Options for the reader.
+   * @param XMLStructReaderContext $context
+   *   Parse context for the reader.
    * @return XMLStructReader
    *   Created reader.
    */
-  protected function createReaderFromDelegate($delegate, array $options = array()) {
-    return new DefaultXMLStructReader($delegate, $options, $this->context);
+  protected function createReaderObject($delegate, array $options = array(), $context = NULL) {
+    return new DefaultXMLStructReader($delegate, $options, $context);
   }
 }
 
