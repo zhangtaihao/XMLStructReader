@@ -285,6 +285,18 @@ abstract class XMLStructReader {
  */
 class DefaultXMLStructReader extends XMLStructReader {
   /**
+   * Element interpreter factory registry.
+   * @var XMLStructReader_ElementInterpreterFactory[]
+   */
+  protected $elementInterpreterFactories = array();
+
+  /**
+   * Attribute interpreter factory registry.
+   * @var XMLStructReader_AttributeInterpreterFactory[]
+   */
+  protected $attributeInterpreterFactories = array();
+
+  /**
    * Specifies default options as documented.
    *
    * @return array
@@ -297,6 +309,56 @@ class DefaultXMLStructReader extends XMLStructReader {
       XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
       XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
     ) + parent::getDefaultOptions();
+  }
+
+  /**
+   * Registers an element interpreter factory.
+   *
+   * @param XMLStructReader_ElementInterpreterFactory $factory
+   *   Element interpreter factory.
+   */
+  protected function registerElementInterpreterFactory($factory) {
+    // TODO
+  }
+
+  /**
+   * Registers an attribute interpreter factory.
+   *
+   * @param XMLStructReader_AttributeInterpreterFactory $factory
+   *   Attribute interpreter factory.
+   */
+  protected function registerAttributeInterpreterFactory($factory) {
+    // TODO
+  }
+
+  /**
+   * Looks up an element interpreter factory.
+   *
+   * @param string $name
+   *   Element name.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if the element has no namespace.
+   * @return XMLStructReader_ElementInterpreterFactory
+   *   Element interpreter factory.
+   */
+  protected function getElementInterpreterFactory($name, $namespace = NULL) {
+    // TODO
+    return NULL;
+  }
+
+  /**
+   * Looks up an attribute interpreter factory.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if the attribute has no namespace.
+   * @return XMLStructReader_AttributeInterpreterFactory
+   *   Attribute interpreter factory.
+   */
+  protected function getAttributeInterpreterFactory($name, $namespace = NULL) {
+    // TODO
+    return NULL;
   }
 
   /**
@@ -340,36 +402,6 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   public function endElement($parser, $name) {
     // TODO
-  }
-
-  /**
-   * Looks up an element interpreter factory.
-   *
-   * @param string $name
-   *   Element name.
-   * @param string|null $namespace
-   *   Namespace URI, or NULL if the element has no namespace.
-   * @return XMLStructReader_ElementInterpreterFactory
-   *   Element interpreter factory.
-   */
-  protected function getElementInterpreterFactory($name, $namespace = NULL) {
-    // TODO
-    return NULL;
-  }
-
-  /**
-   * Looks up an attribute interpreter factory.
-   *
-   * @param string $name
-   *   Attribute name.
-   * @param string|null $namespace
-   *   Namespace URI, or NULL if the attribute has no namespace.
-   * @return XMLStructReader_AttributeInterpreterFactory
-   *   Attribute interpreter factory.
-   */
-  protected function getAttributeInterpreterFactory($name, $namespace = NULL) {
-    // TODO
-    return NULL;
   }
 
   /**
