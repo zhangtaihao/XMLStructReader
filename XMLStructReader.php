@@ -143,6 +143,20 @@ abstract class XMLStructReader {
   }
 
   /**
+   * Gets an option for the reader.
+   *
+   * @param $option
+   *   Option name.
+   * @return mixed
+   *   Option value.
+   */
+  public function getOption($option) {
+    if (array_key_exists($option, $this->options)) {
+      return $this->options[$option];
+    }
+  }
+
+  /**
    * Sets an option on the reader.
    *
    * @param $option
