@@ -436,8 +436,8 @@ abstract class XMLStructReaderFactory {
    *   Stream delegate for the given parameter.
    */
   protected function createStreamDelegate($file) {
-    if (is_string($file) && file_exists($file)) {
-      // Transform file path into file object.
+    if (is_string($file)) {
+      // Attempt to transform any string into file object.
       $file = new SplFileObject($file);
     }
     // Create the delegate.
