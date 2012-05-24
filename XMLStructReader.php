@@ -190,6 +190,34 @@ abstract class XMLStructReader {
   }
 
   /**
+   * Gets XML parser options.
+   *
+   * @see xml_parser_get_option()
+   */
+  public function getXMLOption($option) {
+    if (isset($this->parser)) {
+      return xml_parser_get_option($this->parser, $option);
+    }
+    else {
+      throw new RuntimeException('XML parser does not exist.');
+    }
+  }
+
+  /**
+   * Sets XML parser options.
+   *
+   * @see xml_parser_set_option()
+   */
+  public function setXMLOption($option, $value) {
+    if (isset($this->parser)) {
+      return xml_parser_set_option($this->parser, $option, $value);
+    }
+    else {
+      throw new RuntimeException('XML parser does not exist.');
+    }
+  }
+
+  /**
    * Gets the reader context.
    *
    * @param XMLStructReaderContext $context

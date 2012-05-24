@@ -62,6 +62,49 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
    * @depends testObject
    * @dataProvider delegateProvider
    */
+  public function testSetXMLOption($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $result = $reader->setXMLOption(XML_OPTION_CASE_FOLDING, FALSE);
+    $this->assertTrue($result, 'XML option can be set');
+  }
+
+  /**
+   * @depends testSetXMLOption
+   * @dataProvider delegateProvider
+   */
+  public function testGetXMLOption($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $reader->setXMLOption(XML_OPTION_CASE_FOLDING, FALSE);
+    $value = $reader->getXMLOption(XML_OPTION_CASE_FOLDING);
+    $this->assertFalse((bool) $value, 'XML option can be retrieved.');
+  }
+
+  /**
+   * @depends testSetXMLOption
+   * @dataProvider delegateProvider
+   * @expectedException RuntimeException
+   * @expectedExceptionMessage XML parser does not exist.
+   */
+  public function testInvalidSetXMLOption($delegate) {
+    $reader = new TestInvalidParserXMLStructReader($delegate);
+    $reader->setXMLOption(XML_OPTION_CASE_FOLDING, FALSE);
+  }
+
+  /**
+   * @depends testGetXMLOption
+   * @dataProvider delegateProvider
+   * @expectedException RuntimeException
+   * @expectedExceptionMessage XML parser does not exist.
+   */
+  public function testInvalidGetXMLOption($delegate) {
+    $reader = new TestInvalidParserXMLStructReader($delegate);
+    $reader->getXMLOption(XML_OPTION_CASE_FOLDING);
+  }
+
+  /**
+   * @depends testObject
+   * @dataProvider delegateProvider
+   */
   public function testContext($delegate) {
     $context = new XMLStructReaderContext(array('key' => 'value'));
     $this->assertTrue(is_object($context), 'A context can be created.');
