@@ -2,6 +2,9 @@
 /**
  * XML structured array parser.
  *
+ * XMLStructReader can be used to read an XML into an array, optionally with
+ * annotations on the document itself to adjust the resulting structure.
+ *
  * @package  XMLStructArray
  * @author   Taihao Zhang <jason@zth.me>
  * @license  GNU General Public License v3.0
@@ -44,33 +47,25 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactor
 define('XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS', 'includedUseSameOptions');
 
 /**
- * Main implementation of XML structured array parser.
- *
- * XMLStructReader can be used to read an XML into an array, optionally with
- * annotations on the document itself to adjust the resulting structure.
+ * Base implementation of XML structured array parser.
  */
-class XMLStructReader {
+abstract class XMLStructReader {
   /**
    * Namespace URI.
    */
   const NS = 'http://xml.zth.me/XMLStructReader/';
 
   /**
-   * Reader default options.
-   */
-  protected $defaultOptions = array(
-    // Specify default options as documented.
-    XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
-    XML_STRUCT_READER_OPTION_INCLUDED_PATH => NULL,
-    XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
-    XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
-  );
-
-  /**
    * File delegate to parse.
    * @var XMLStructReader_StreamDelegate
    */
   protected $fileDelegate;
+
+  /**
+   * Default options cache.
+   * @var array
+   */
+  protected $defaultOptions;
 
   /**
    * Reader options.
@@ -96,14 +91,14 @@ class XMLStructReader {
    * @param XMLStructReader_StreamDelegate $fileDelegate
    *   Delegate object for a file to parse.
    * @param array $options
-   *   Options for the reader. For possible option keys, see self::setOption().
+   *   Options for the reader.
    * @param array $context
    *   Parse context for the reader. Used internally to specify metadata about
    *   the base context to use when parsing with the created reader.
    */
   public function __construct($fileDelegate, array $options = array(), array $context = array()) {
     $this->fileDelegate = $fileDelegate;
-    $this->options = $this->defaultOptions;
+    $this->options = $this->defaultOptions = $this->getDefaultOptions();
     $this->setOptions($options);
     $this->setContext($context);
     $this->setUp();
@@ -114,6 +109,16 @@ class XMLStructReader {
    */
   public function __destruct() {
     $this->cleanUp();
+  }
+
+  /**
+   * Gets default reader options.
+   *
+   * @return array
+   *   Set of options.
+   */
+  protected function getDefaultOptions() {
+    return array();
   }
 
   /**
@@ -138,13 +143,9 @@ class XMLStructReader {
    * Sets an option on the reader.
    *
    * @param $option
-   *   An option name. Possible values:
-   *   - XML_STRUCT_READER_OPTION_INCLUDED_LOAD
-   *   - XML_STRUCT_READER_OPTION_INCLUDED_PATH
-   *   - XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY
-   *   - XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS
+   *   An option name.
    * @param mixed $value
-   *   - Option value.
+   *   Option value.
    */
   public function setOption($option, $value) {
     if (array_key_exists($option, $this->defaultOptions)) {
@@ -156,7 +157,7 @@ class XMLStructReader {
    * Sets a number of option on the reader.
    *
    * @param array $options
-   *   Options to set. For possible option keys, see self::setOption().
+   *   Options to set.
    */
   public function setOptions(array $options) {
     foreach ($options as $option => $value) {
@@ -169,21 +170,6 @@ class XMLStructReader {
    */
   public function resetOptions() {
     $this->setOptions($this->defaultOptions);
-  }
-
-  /**
-   * Creates a new parser for use with this object.
-   *
-   * @return resource
-   *   Handle to the parser.
-   */
-  protected function createParser() {
-    $parser = xml_parser_create_ns();
-    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
-    xml_set_object($parser, $this);
-    xml_set_element_handler($parser, 'startElement', 'endElement');
-    xml_set_character_data_handler($parser, 'characterData');
-    return $parser;
   }
 
   /**
@@ -204,6 +190,21 @@ class XMLStructReader {
    */
   public function setContext(array $context) {
     $this->context = $context;
+  }
+
+  /**
+   * Creates a new parser for use with this object.
+   *
+   * @return resource
+   *   Handle to the parser.
+   */
+  protected function createParser() {
+    $parser = xml_parser_create_ns();
+    xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
+    xml_set_object($parser, $this);
+    xml_set_element_handler($parser, 'startElement', 'endElement');
+    xml_set_character_data_handler($parser, 'characterData');
+    return $parser;
   }
 
   /**
@@ -229,8 +230,56 @@ class XMLStructReader {
     }
     $this->cleanUp();
 
-    // TODO
-    return array();
+    return $this->getData();
+  }
+
+  /**
+   * Handles element start.
+   */
+  abstract public function startElement($parser, $name, array $attributes);
+
+  /**
+   * Handles character data.
+   */
+  abstract public function characterData($parser, $data);
+
+  /**
+   * Handles element end.
+   */
+  abstract public function endElement($parser, $name);
+
+  /**
+   * Returns the read data array.
+   *
+   * @return array|null
+   *   Data array, or NULL if nothing was read (i.e. not even empty).
+   */
+  abstract public function getData();
+}
+
+/**
+ * Default reader implementation.
+ *
+ * This reader supports the following options:
+ * - XML_STRUCT_READER_OPTION_INCLUDED_LOAD
+ * - XML_STRUCT_READER_OPTION_INCLUDED_PATH
+ * - XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY
+ * - XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS
+ */
+class DefaultXMLStructReader extends XMLStructReader {
+  /**
+   * Specifies default options as documented.
+   *
+   * @return array
+   *   Default reader options.
+   */
+  protected function getDefaultOptions() {
+    return array(
+      XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
+      XML_STRUCT_READER_OPTION_INCLUDED_PATH => NULL,
+      XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
+      XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
+    ) + parent::getDefaultOptions();
   }
 
   /**
@@ -305,12 +354,23 @@ class XMLStructReader {
     // TODO
     return NULL;
   }
+
+  /**
+   * Returns the read data array.
+   *
+   * @return array|null
+   *   Data array, or NULL if nothing was read (i.e. not even empty).
+   */
+  public function getData() {
+    // TODO
+    return NULL;
+  }
 }
 
 /**
- * Factory class for creating a reader.
+ * Base factory class for creating a reader.
  */
-class XMLStructReaderFactory {
+abstract class XMLStructReaderFactory {
   /**
    * Parsing context to include with created readers.
    * @var array
@@ -343,8 +403,8 @@ class XMLStructReaderFactory {
   }
 
   /**
-   * Creates a reader with options. See XMLStructReader::setOption() for a list
-   * of options to initialize with.
+   * Creates a reader with options. See a specific reader implementation for
+   * supported options to initialize with.
    *
    * @param mixed $file
    *   Path to an XML file, a stream resource, or an SplFileObject instance.
@@ -355,7 +415,7 @@ class XMLStructReaderFactory {
    */
   public function createReader($file, array $options = array()) {
     $delegate = $this->createStreamDelegate($file);
-    $reader = new XMLStructReader($delegate, $options, $this->context);
+    $reader = $this->createReaderFromDelegate($delegate, $options);
     return $reader;
   }
 
@@ -375,6 +435,37 @@ class XMLStructReaderFactory {
     // Create the delegate.
     $delegate = new XMLStructReader_StreamDelegate($file);
     return $delegate;
+  }
+
+  /**
+   * Creates a reader from a delegate.
+   *
+   * @param XMLStructReader_StreamDelegate $delegate
+   *   Delegate object for a file to parse.
+   * @param array $options
+   *   Options for the reader.
+   * @return XMLStructReader
+   *   Created reader.
+   */
+  abstract protected function createReaderFromDelegate($delegate, array $options = array());
+}
+
+/**
+ * Default reader factory. This factory creates a DefaultXMLStructReader.
+ */
+class DefaultXMLStructReaderFactory extends XMLStructReaderFactory {
+  /**
+   * Creates a reader from a delegate.
+   *
+   * @param XMLStructReader_StreamDelegate $delegate
+   *   Delegate object for a file to parse.
+   * @param array $options
+   *   Options for the reader.
+   * @return XMLStructReader
+   *   Created reader.
+   */
+  protected function createReaderFromDelegate($delegate, array $options = array()) {
+    return new DefaultXMLStructReader($delegate, $options, $this->context);
   }
 }
 
