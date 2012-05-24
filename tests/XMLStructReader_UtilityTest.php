@@ -6,20 +6,26 @@ require_once 'XMLStructReader.php';
  * Stream delegate utility test.
  */
 class XMLStructReader_StreamDelegateTest extends PHPUnit_Framework_TestCase {
-  protected $fileResource;
-  protected $fileObject;
+  protected $xmlFile;
 
-  protected function setUp() {
-    $this->fileResource = fopen('tests/basic.xml', 'r');
-    $this->fileObject = new SplFileObject('tests/basic.xml');
+  protected function getXMLFile() {
+    if (!isset($this->xmlFile)) {
+      $xml = "<root>\n" .
+        "  <element>\n" .
+        "    <property>value</property>\n" .
+        "  </element>\n" .
+        "</root>";
+      $this->xmlFile = 'data://text/plain,' . $xml;
+    }
+    return $this->xmlFile;
   }
 
   protected function createResourceDelegate() {
-    return new XMLStructReader_StreamDelegate($this->fileResource);
+    return new XMLStructReader_StreamDelegate(fopen($this->getXMLFile(), 'r'));
   }
 
   protected function createObjectDelegate() {
-    return new XMLStructReader_StreamDelegate($this->fileObject);
+    return new XMLStructReader_StreamDelegate(new SplFileObject($this->getXMLFile()));
   }
 
   protected function getExpectedLines() {
@@ -49,19 +55,27 @@ class XMLStructReader_StreamDelegateTest extends PHPUnit_Framework_TestCase {
     new XMLStructReader_StreamDelegate(NULL);
   }
 
+  public function resourceDelegateProvider() {
+    return array(array($this->createResourceDelegate()));
+  }
+
+  public function objectDelegateProvider() {
+    return array(array($this->createResourceDelegate()));
+  }
+
   /**
    * @depends testCreateResourceDelegate
+   * @dataProvider resourceDelegateProvider
    */
-  public function testResourceStreamEOF() {
-    $delegate = $this->createResourceDelegate();
+  public function testResourceStreamEOF(XMLStructReader_StreamDelegate $delegate) {
     $this->assertFalse($delegate->isEOF(), 'A delegate can read a resource.');
   }
 
   /**
    * @depends testResourceStreamEOF
+   * @dataProvider resourceDelegateProvider
    */
-  public function testResourceStreamReadLine() {
-    $delegate = $this->createResourceDelegate();
+  public function testResourceStreamReadLine(XMLStructReader_StreamDelegate $delegate) {
     $lines = array();
     while (!$delegate->isEOF()) {
       $lines[] = $delegate->readLine();
@@ -72,27 +86,22 @@ class XMLStructReader_StreamDelegateTest extends PHPUnit_Framework_TestCase {
 
   /**
    * @depends testCreateObjectDelegate
+   * @dataProvider objectDelegateProvider
    */
-  public function testObjectStreamEOF() {
-    $delegate = $this->createObjectDelegate();
+  public function testObjectStreamEOF(XMLStructReader_StreamDelegate $delegate) {
     $this->assertFalse($delegate->isEOF(), 'A delegate can read a file object.');
   }
 
   /**
    * @depends testObjectStreamEOF
+   * @dataProvider objectDelegateProvider
    */
-  public function testObjectStreamReadLine() {
-    $delegate = $this->createObjectDelegate();
+  public function testObjectStreamReadLine(XMLStructReader_StreamDelegate $delegate) {
     $lines = array();
     while (!$delegate->isEOF()) {
       $lines[] = $delegate->readLine();
     }
     $expectedLines = $this->getExpectedLines();
     $this->assertSame($expectedLines, $lines, 'A file object delegate correctly reads lines.');
-  }
-
-  protected function tearDown() {
-    @fclose($this->fileResource);
-    unset($this->fileObject);
   }
 }
