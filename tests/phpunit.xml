@@ -1,0 +1,13 @@
+<phpunit>
+  <php>
+    <includePath>..</includePath>
+  </php>
+  <filter>
+    <blacklist>
+      <directory>.</directory>
+      <exclude>
+        <file>XMLStructReaderAPI.inc.php</file>
+      </exclude>
+    </blacklist>
+  </filter>
+</phpunit>

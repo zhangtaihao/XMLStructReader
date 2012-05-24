@@ -1,129 +1,109 @@
 <?php
 
-require_once 'XMLStructReader.php';
+require_once 'XMLStructReaderAPI.inc.php';
 
 /**
- * Reader factory test.
+ * Reader and factory tests.
  */
-class XMLStructReaderFactoryAPITest extends PHPUnit_Framework_TestCase {
-  public function testCreateFactory() {
-    $factory = new TestXMLStructReaderFactory();
-    $this->assertTrue(is_object($factory), 'Basic factory can be created.');
-  }
-
+class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
   /**
-   * @expectedException InvalidArgumentException
-   * @expectedExceptionMessage Owner is not a valid object.
+   * @dataProvider delegateProvider
    */
-  public function testCreateFactoryInvalidOwner() {
-    new DefaultXMLStructReaderFactory('invalid value');
-  }
-
-  /**
-   * @expectedException InvalidArgumentException
-   * @expectedExceptionMessage Context is not a valid object.
-   */
-  public function testCreateFactoryInvalidContext() {
-    new DefaultXMLStructReaderFactory(NULL, 'invalid value');
-  }
-
-  /**
-   * @depends testCreateFactory
-   * @dataProvider fileProvider
-   */
-  public function testCreateReader($file) {
-    $factory = new TestXMLStructReaderFactory();
-    $reader = $factory->createReader($file);
-    $this->assertTrue(is_object($reader), 'Basic reader can be created from factory.');
+  public function testObject($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $this->assertTrue(is_object($reader), 'Reader can be constructed.');
     // Simulate destructor.
     $reader->__destruct();
+    $this->assertTrue(TRUE, is_object($reader), 'Reader can be destructed.');
   }
 
   /**
-   * @depends testCreateFactory
-   * @dataProvider pathProvider
+   * @depends testObject
+   * @dataProvider delegateProvider
    */
-  public function testCreateReaderFromPath($path) {
-    $factory = new TestXMLStructReaderFactory();
-    $reader = $factory->createReader($path);
-    $this->assertTrue(is_object($reader), 'Reader can be created from a path.');
+  public function testOptions($delegate) {
+    $reader = new TestXMLStructReader($delegate, array('test1' => 'custom'));
+    $this->assertEquals('default', $reader->getOption('test2'), 'A default option can be retrieved.');
+    $this->assertEquals('custom', $reader->getOption('test1'), 'A custom option can be retrieved.');
+    $reader->resetOptions();
+    $this->assertEquals('default', $reader->getOption('test1'), 'A custom option can be reset.');
+    $this->assertNull($reader->getOption('invalid'), 'An invalid option is NULL.');
   }
 
   /**
-   * @depends testCreateReader
-   * @dataProvider fileProvider
+   * @depends testObject
+   * @dataProvider delegateProvider
    */
-  public function testCreateFactoryWithOwner($file) {
-    $factory = new TestXMLStructReaderFactory();
-    $reader = $factory->createReader($file);
-    $subFactory = new TestXMLStructReaderFactory($reader);
-    $this->assertTrue(is_object($subFactory) && is_object($subFactory->owner), 'Basic factory can be created with an owner.');
+  public function testContext($delegate) {
+    $context = new XMLStructReaderContext(array('key' => 'value'));
+    $this->assertTrue(is_object($context), 'A context can be created.');
+    $reader = new TestXMLStructReader($delegate, array(), $context);
+    $context = $reader->getContext();
+    $this->assertObjectHasAttribute('key', $context, 'Reader context value can be retrieved.');
   }
 
   /**
-   * @depends testCreateFactoryWithOwner
-   * @dataProvider fileProvider
+   * @depends testObject
+   * @dataProvider delegateProvider
    */
-  public function testCreateFactoryWithContext($file) {
-    $factory = new TestXMLStructReaderFactory();
-    $reader = $factory->createReader($file);
-    $subFactory = new TestXMLStructReaderFactory($reader, $reader->getContext());
-    $this->assertTrue(is_object($subFactory) && is_object($subFactory->owner), 'Basic factory can be created with a context.');
+  public function testRead($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $data = $reader->read();
+    $expectedData = array(
+      'start' => 'test',
+      'attributes' => array('attr' => 'value'),
+      'content' => 'content',
+      'end' => 'test',
+    );
+    $this->assertSame($expectedData, $data, 'Data is correctly read from a reader.');
+  }
+
+  /**
+   * @depends testObject
+   * @dataProvider delegateProvider
+   * @expectedException RuntimeException
+   * @expectedExceptionMessage Data could not be read.
+   */
+  public function testReadInvalidParser($delegate) {
+    $reader = new TestInvalidParserXMLStructReader($delegate);
+    $reader->read();
+  }
+
+  /**
+   * @depends testObject
+   * @dataProvider invalidDelegateProvider
+   * @expectedException XMLStructReaderException
+   */
+  public function testReadInvalidXML($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $reader->read();
   }
 
   protected function getDataPath() {
-    $xml = '<test attr="value">test</test>';
+    $xml = '<test attr="value">content</test>';
     return 'data://text/plain,' . $xml;
   }
 
-  public function fileProvider() {
-    return array(array(new SplFileObject($this->getDataPath())));
+  protected function createDelegate() {
+    // @codeCoverageIgnoreStart
+    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($this->getDataPath()));
+    // @codeCoverageIgnoreEnd
+    return $delegate;
   }
 
-  public function pathProvider() {
-    return array(array($this->getDataPath()));
-  }
-}
-
-/**
- * Test reader.
- */
-class TestXMLStructReader extends XMLStructReader {
-  public $data = array();
-
-  protected function getDefaultOptions() {
-    return array(
-      'test1' => 'default',
-      'test2' => 'default',
-    ) + parent::getDefaultOptions();
+  public function delegateProvider() {
+    return array(array($this->createDelegate()));
   }
 
-  public function startElement($parser, $name, array $attributes) {
-    $data['start'] = $name;
-    $data['attributes'] = $attributes;
+  protected function createInvalidDelegate() {
+    // @codeCoverageIgnoreStart
+    $xmlPath = 'data://text/plain,<invalid></test>';
+    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($xmlPath));
+    // @codeCoverageIgnoreEnd
+    return $delegate;
   }
 
-  public function characterData($parser, $data) {
-    $data['content'] = $data;
-  }
-
-  public function endElement($parser, $name) {
-    $data['end'] = $name;
-  }
-
-  public function getData() {
-    return $this->data;
-  }
-}
-
-/**
- * Test factory producing test reader.
- */
-class TestXMLStructReaderFactory extends XMLStructReaderFactory {
-  // Expose owner.
-  public $owner;
-
-  protected function createReaderObject($delegate, array $options = array(), $context = NULL) {
-    return new TestXMLStructReader($delegate, $options, $context);
+  public function invalidDelegateProvider() {
+    return array(array($this->createInvalidDelegate()));
   }
 }
