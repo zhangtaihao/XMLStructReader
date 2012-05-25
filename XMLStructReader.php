@@ -631,6 +631,16 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
    *   interpreted by other interpreters are processed.
    */
   public function getElementName();
+
+  /**
+   * Creates an element interpreter.
+   *
+   * @param XMLStructReader_ElementInterpreter $parent
+   *   Parent element interpreter.
+   * @return XMLStructReader_ElementInterpreter
+   *   Element interpreter object.
+   */
+  public function createElementInterpreter($parent = NULL);
 }
 
 /**
@@ -645,6 +655,52 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
    *   interpreted by other interpreters are processed.
    */
   public function getAttributeName();
+
+  /**
+   * Creates an attribute interpreter.
+   *
+   * @param XMLStructReader_ElementInterpreter $element
+   *   Containing element interpreter.
+   * @return XMLStructReader_AttributeInterpreter
+   *   Attribute interpreter object.
+   */
+  public function createAttributeInterpreter($element);
+}
+
+/**
+ * Element interpreter.
+ */
+interface XMLStructReader_ElementInterpreter {
+  /**
+   * Adds data for the element.
+   *
+   * @param mixed $data
+   *   Data to add.
+   * @param string|null $key
+   *   Data key, or NULL if none applicable, e.g. character data.
+   */
+  public function addData($data, $key = NULL);
+
+  /**
+   * Handles the element (complete with data) as it ends.
+   *
+   * @param string $name
+   *   Element name.
+   */
+  public function handleElement($name);
+}
+
+/**
+ * Attribute interpreter.
+ */
+interface XMLStructReader_AttributeInterpreter {
+  /**
+   * Handles the element attribute.
+   *
+   * @param string $name
+   *   Attribute name.
+   */
+  public function handleAttribute($name);
 }
 
 /**
