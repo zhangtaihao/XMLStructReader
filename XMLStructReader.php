@@ -319,6 +319,12 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected $contextStack = array();
 
   /**
+   * Element trail stack.
+   * @var XMLStructReader_ElementInterpreter[]
+   */
+  protected $elementTrail = array();
+
+  /**
    * Element interpreter factory registry.
    * @var XMLStructReader_ElementInterpreterFactory[]
    */
@@ -419,31 +425,82 @@ class DefaultXMLStructReader extends XMLStructReader {
   }
 
   /**
+   * Pushes an element onto the trail.
+   *
+   * @param XMLStructReader_ElementInterpreter $element
+   *   Element interpreter.
+   */
+  protected function pushElement($element) {
+    array_push($this->elementTrail, $element);
+  }
+
+  /**
+   * Pops an element off the trail.
+   *
+   * @return XMLStructReader_ElementInterpreter
+   *   Removed element interpreter.
+   */
+  protected function popElement() {
+    $element = array_pop($this->elementTrail);
+    return $element;
+  }
+
+  /**
+   * Gets the last element in the trail.
+   *
+   * @return XMLStructReader_ElementInterpreter
+   *   Element interpreter, or NULL if no element.
+   */
+  protected function getElement() {
+    $element = end($this->elementTrail);
+    return $element ? $element : NULL;
+  }
+
+  /**
    * Handles element start.
    */
   public function startElement($parser, $name, array $attributes) {
-    // Derive namespace and element name.
-    $namespace = NULL;
+    // Clone a new context.
+    $context = clone $this->getContext();
+    $this->pushContext($context);
+
+    // Derive element namespace and name.
+    $elementNamespace = NULL;
     $elementName = $name;
-    if (FALSE !== $separatorPos = strrpos($name, ':')) {
-      $namespace = substr($name, 0, $separatorPos);
-      $elementName = substr($name, $separatorPos + 1);
+    if (FALSE !== $separatorPos = strrpos($elementName, ':')) {
+      $elementNamespace = substr($elementName, 0, $separatorPos);
+      $elementName = substr($elementName, $separatorPos + 1);
     }
 
-    // TODO Determine parent element.
+    // Look up element interpreter factory.
+    if (!$factory = $this->getElementInterpreterFactory($elementName, $elementNamespace)) {
+      throw new RuntimeException('No matching element interpreter is found.');
+    }
 
-    // TODO Look up element interpreter factory.
-
-    // TODO Create interpreter with parent.
+    // Create interpreter with parent.
+    $element = $factory->createElementInterpreter($context, $this->getElement());
+    $this->pushElement($element);
 
     // Process attributes.
     foreach ($attributes as $attrName => $attrValue) {
+      // Derive attribute namespace and name.
+      $attributeNamespace = NULL;
+      $attributeName = $attrName;
+      if (FALSE !== $separatorPos = strrpos($attributeName, ':')) {
+        $attributeNamespace = substr($attributeName, 0, $separatorPos);
+        $attributeName = substr($attributeName, $separatorPos + 1);
+      }
 
-      // TODO Look up attribute interpreter factory.
+      // Look up attribute interpreter factory.
+      if (!$factory = $this->getAttributeInterpreterFactory($attributeName, $attributeNamespace)) {
+        throw new RuntimeException('No matching attribute interpreter is found.');
+      }
 
-      // TODO Create attribute interpreter for element.
+      // Create attribute interpreter for element.
+      $attribute = $factory->createAttributeInterpreter($context, $element);
 
-      // TODO
+      // Handle attribute.
+      $attribute->handleAttribute($attributeName);
     }
   }
 
@@ -451,14 +508,29 @@ class DefaultXMLStructReader extends XMLStructReader {
    * Handles character data.
    */
   public function characterData($parser, $data) {
-    // TODO
+    // Add data to element.
+    if ($element = $this->getElement()) {
+      // TODO Transform data based on options.
+      $element->addData($data);
+    }
   }
 
   /**
    * Handles element end.
    */
   public function endElement($parser, $name) {
-    // TODO
+    // Pop context off.
+    $this->popContext();
+
+    // Pop element off.
+    $element = $this->popElement();
+    // Derive element namespace and name.
+    $elementName = $name;
+    if (FALSE !== $separatorPos = strrpos($elementName, ':')) {
+      $elementName = substr($elementName, $separatorPos + 1);
+    }
+    // Handle element.
+    $element->handleElement($elementName);
   }
 
   /**
@@ -635,12 +707,14 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
   /**
    * Creates an element interpreter.
    *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
    * @param XMLStructReader_ElementInterpreter $parent
    *   Parent element interpreter.
    * @return XMLStructReader_ElementInterpreter
    *   Element interpreter object.
    */
-  public function createElementInterpreter($parent = NULL);
+  public function createElementInterpreter($context, $parent = NULL);
 }
 
 /**
@@ -659,12 +733,14 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
   /**
    * Creates an attribute interpreter.
    *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
    * @param XMLStructReader_ElementInterpreter $element
    *   Containing element interpreter.
    * @return XMLStructReader_AttributeInterpreter
    *   Attribute interpreter object.
    */
-  public function createAttributeInterpreter($element);
+  public function createAttributeInterpreter($context, $element);
 }
 
 /**
