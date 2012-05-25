@@ -64,6 +64,9 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
    */
   public function testSetXMLOption($delegate) {
     $reader = new TestXMLStructReader($delegate);
+    // Reset XML option for testing.
+    xml_parser_set_option($reader->parser, XML_OPTION_CASE_FOLDING, TRUE);
+
     $result = $reader->setXMLOption(XML_OPTION_CASE_FOLDING, FALSE);
     $this->assertTrue($result, 'XML option can be set');
   }
@@ -74,6 +77,9 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
    */
   public function testGetXMLOption($delegate) {
     $reader = new TestXMLStructReader($delegate);
+    // Reset XML option for testing.
+    xml_parser_set_option($reader->parser, XML_OPTION_CASE_FOLDING, TRUE);
+
     $reader->setXMLOption(XML_OPTION_CASE_FOLDING, FALSE);
     $value = $reader->getXMLOption(XML_OPTION_CASE_FOLDING);
     $this->assertFalse((bool) $value, 'XML option can be retrieved.');

@@ -9,6 +9,7 @@ require_once 'XMLStructReader.php';
  * Test reader.
  */
 class TestXMLStructReader extends XMLStructReader {
+  public $parser;
   public $data = array();
 
   protected function getDefaultOptions() {
