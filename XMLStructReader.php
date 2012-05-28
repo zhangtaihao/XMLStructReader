@@ -369,6 +369,21 @@ class DefaultXMLStructReader extends XMLStructReader {
   }
 
   /**
+   * Sets up the default reader.
+   */
+  protected function setUp() {
+    parent::setUp();
+    $this->setUpInterpreters();
+  }
+
+  /**
+   * Registers interpreters for this reader.
+   */
+  protected function setUpInterpreters() {
+    // TODO
+  }
+
+  /**
    * Pushes a context onto the stack.
    *
    * @param XMLStructReaderContext $context
