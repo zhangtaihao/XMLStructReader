@@ -5,7 +5,7 @@
  * XMLStructReader can be used to read an XML into an array, optionally with
  * annotations on the document itself to adjust the resulting structure.
  *
- * @package  XMLStructArray
+ * @package  XMLStructReader
  * @author   Taihao Zhang <jason@zth.me>
  * @license  GNU General Public License v3.0
  * @license  LICENSE.txt
