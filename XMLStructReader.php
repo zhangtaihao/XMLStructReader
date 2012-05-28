@@ -56,6 +56,11 @@ abstract class XMLStructReader {
   const NS = 'http://xml.zth.me/XMLStructReader/';
 
   /**
+   * Namespace separator.
+   */
+  const NS_SEPARATOR = ':';
+
+  /**
    * File delegate to parse.
    * @var XMLStructReader_StreamDelegate
    */
@@ -244,7 +249,7 @@ abstract class XMLStructReader {
    *   Handle to the parser.
    */
   protected function createParser() {
-    $parser = xml_parser_create_ns();
+    $parser = xml_parser_create_ns(NULL, self::NS_SEPARATOR);
     xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, FALSE);
     xml_set_object($parser, $this);
     xml_set_element_handler($parser, 'startElement', 'endElement');
@@ -293,6 +298,24 @@ abstract class XMLStructReader {
     $this->cleanUp();
 
     return $this->getData();
+  }
+
+  /**
+   * Splits a qualified name into the short name and its namespace.
+   *
+   * @param string $qualifiedName
+   *   Fully qualified XML name.
+   * @return array
+   *   List of namespace and name. The namespace may be NULL.
+   */
+  protected function resolveQualifiedName($qualifiedName) {
+    $namespace = NULL;
+    $name = $qualifiedName;
+    if (FALSE !== $separatorPos = strrpos($qualifiedName, self::NS_SEPARATOR)) {
+      $namespace = substr($qualifiedName, 0, $separatorPos);
+      $name = substr($qualifiedName, $separatorPos + 1);
+    }
+    return array($namespace, $name);
   }
 
   /**
@@ -496,15 +519,8 @@ class DefaultXMLStructReader extends XMLStructReader {
     $context = clone $this->getContext();
     $this->pushContext($context);
 
-    // Derive element namespace and name.
-    $elementNamespace = NULL;
-    $elementName = $name;
-    if (FALSE !== $separatorPos = strrpos($elementName, ':')) {
-      $elementNamespace = substr($elementName, 0, $separatorPos);
-      $elementName = substr($elementName, $separatorPos + 1);
-    }
-
     // Look up element interpreter factory.
+    list($elementNamespace, $elementName) = $this->resolveQualifiedName($name);
     if (!$factory = $this->getElementInterpreterFactory($elementName, $elementNamespace)) {
       throw new RuntimeException('No matching element interpreter is found.');
     }
@@ -515,15 +531,8 @@ class DefaultXMLStructReader extends XMLStructReader {
 
     // Process attributes.
     foreach ($attributes as $attrName => $attrValue) {
-      // Derive attribute namespace and name.
-      $attributeNamespace = NULL;
-      $attributeName = $attrName;
-      if (FALSE !== $separatorPos = strrpos($attributeName, ':')) {
-        $attributeNamespace = substr($attributeName, 0, $separatorPos);
-        $attributeName = substr($attributeName, $separatorPos + 1);
-      }
-
       // Look up attribute interpreter factory.
+      list($attributeNamespace, $attributeName) = $this->resolveQualifiedName($attrName);
       if (!$factory = $this->getAttributeInterpreterFactory($attributeName, $attributeNamespace)) {
         throw new RuntimeException('No matching attribute interpreter is found.');
       }
