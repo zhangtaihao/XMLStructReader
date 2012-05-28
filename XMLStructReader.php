@@ -478,7 +478,7 @@ class DefaultXMLStructReader extends XMLStructReader {
     }
 
     // Create interpreter with parent.
-    $element = $factory->createElementInterpreter($context, $this->getElement());
+    $element = $factory->createElementInterpreter($elementName, $context, $this->getElement());
     $this->pushElement($element);
 
     // Process attributes.
@@ -497,10 +497,10 @@ class DefaultXMLStructReader extends XMLStructReader {
       }
 
       // Create attribute interpreter for element.
-      $attribute = $factory->createAttributeInterpreter($context, $element);
+      $attribute = $factory->createAttributeInterpreter($attributeName, $context, $element);
 
       // Handle attribute.
-      $attribute->handleAttribute($attributeName);
+      $attribute->handleAttribute($attrValue);
     }
   }
 
@@ -508,10 +508,9 @@ class DefaultXMLStructReader extends XMLStructReader {
    * Handles character data.
    */
   public function characterData($parser, $data) {
-    // Add data to element.
+    // Handle element data.
     if ($element = $this->getElement()) {
-      // TODO Transform data based on options.
-      $element->addData($data);
+      $element->handleCData($data);
     }
   }
 
@@ -521,16 +520,8 @@ class DefaultXMLStructReader extends XMLStructReader {
   public function endElement($parser, $name) {
     // Pop context off.
     $this->popContext();
-
-    // Pop element off.
-    $element = $this->popElement();
-    // Derive element namespace and name.
-    $elementName = $name;
-    if (FALSE !== $separatorPos = strrpos($elementName, ':')) {
-      $elementName = substr($elementName, $separatorPos + 1);
-    }
-    // Handle element.
-    $element->handleElement($elementName);
+    // Pop and handle element.
+    $this->popElement()->handleElement();
   }
 
   /**
@@ -707,6 +698,8 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
   /**
    * Creates an element interpreter.
    *
+   * @param string $name
+   *   Element name.
    * @param XMLStructReaderContext $context
    *   Reader context.
    * @param XMLStructReader_ElementInterpreter $parent
@@ -714,7 +707,7 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
    * @return XMLStructReader_ElementInterpreter
    *   Element interpreter object.
    */
-  public function createElementInterpreter($context, $parent = NULL);
+  public function createElementInterpreter($name, $context, $parent = NULL);
 }
 
 /**
@@ -733,6 +726,8 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
   /**
    * Creates an attribute interpreter.
    *
+   * @param string $name
+   *   Attribute name.
    * @param XMLStructReaderContext $context
    *   Reader context.
    * @param XMLStructReader_ElementInterpreter $element
@@ -740,7 +735,7 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
    * @return XMLStructReader_AttributeInterpreter
    *   Attribute interpreter object.
    */
-  public function createAttributeInterpreter($context, $element);
+  public function createAttributeInterpreter($name, $context, $element);
 }
 
 /**
@@ -758,12 +753,18 @@ interface XMLStructReader_ElementInterpreter {
   public function addData($data, $key = NULL);
 
   /**
-   * Handles the element (complete with data) as it ends.
+   * Handles character data for the element. Where possible, use self::addData()
+   * preferentially to populate element data.
    *
-   * @param string $name
-   *   Element name.
+   * @param string $data
+   *   Raw character data from XML parser.
    */
-  public function handleElement($name);
+  public function handleCData($data);
+
+  /**
+   * Handles the element (complete with data) as it ends.
+   */
+  public function handleElement();
 }
 
 /**
@@ -773,10 +774,10 @@ interface XMLStructReader_AttributeInterpreter {
   /**
    * Handles the element attribute.
    *
-   * @param string $name
-   *   Attribute name.
+   * @param string $value
+   *   Attribute value.
    */
-  public function handleAttribute($name);
+  public function handleAttribute($value);
 }
 
 /**
