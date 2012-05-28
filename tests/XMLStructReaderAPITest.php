@@ -196,7 +196,18 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
     return $delegate;
   }
 
+  protected function createInvalidEntityDelegate() {
+    // @codeCoverageIgnoreStart
+    $xmlPath = 'data://text/plain,<test>&unknown;</test>';
+    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($xmlPath));
+    // @codeCoverageIgnoreEnd
+    return $delegate;
+  }
+
   public function invalidDelegateProvider() {
-    return array(array($this->createInvalidDelegate()));
+    return array(
+      array($this->createInvalidDelegate()),
+      array($this->createInvalidEntityDelegate()),
+    );
   }
 }
