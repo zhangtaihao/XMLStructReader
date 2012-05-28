@@ -168,8 +168,24 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
     return $delegate;
   }
 
+  protected function getMultilineDataPath() {
+    return 'data://text/plain,<test attr="value">
+      content
+    </test>';
+  }
+
+  protected function createMultilineDelegate() {
+    // @codeCoverageIgnoreStart
+    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($this->getMultilineDataPath()));
+    // @codeCoverageIgnoreEnd
+    return $delegate;
+  }
+
   public function delegateProvider() {
-    return array(array($this->createDelegate()));
+    return array(
+      array($this->createDelegate()),
+      array($this->createMultilineDelegate()),
+    );
   }
 
   protected function createInvalidDelegate() {

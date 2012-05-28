@@ -25,7 +25,7 @@ class TestXMLStructReader extends XMLStructReader {
   }
 
   public function characterData($parser, $data) {
-    $this->data['content'] = $data;
+    $this->data['content'] = trim($data);
   }
 
   public function endElement($parser, $name) {
