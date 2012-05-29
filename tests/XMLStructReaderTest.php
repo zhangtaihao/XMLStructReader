@@ -131,4 +131,5 @@ class NullElementInterpreter implements XMLStructReader_ElementInterpreter {
   public function addData($data, $key = NULL) {}
   public function handleCData($data) {}
   public function handleElement() {}
+  public function getData() {}
 }
