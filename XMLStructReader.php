@@ -86,6 +86,12 @@ abstract class XMLStructReader {
   protected $parser;
 
   /**
+   * Interpreter factory registry.
+   * @var XMLStructReader_InterpreterFactory[][]
+   */
+  protected $interpreterFactoryRegistry = array();
+
+  /**
    * Creates a reader with options.
    *
    * @param XMLStructReader_StreamDelegate $fileDelegate
@@ -253,6 +259,38 @@ abstract class XMLStructReader {
   }
 
   /**
+   * Registers an interpreter factory.
+   *
+   * @param string $type
+   *   Interpreter type, as a primary classifier.
+   * @param string $id
+   *   Interpreter identifier.
+   * @param XMLStructReader_InterpreterFactory $factory
+   *   Factory object.
+   */
+  protected function registerInterpreterFactory($type, $id, $factory) {
+    $this->interpreterFactoryRegistry[$type][$id] = $factory;
+  }
+
+  /**
+   * Looks up an interpreter factory.
+   *
+   * @param string $type
+   *   Interpreter type, as a primary classifier.
+   * @param string[] $candidateIds
+   *   An array of candidate factory identifiers to look up.
+   * @return XMLStructReader_InterpreterFactory
+   *   Interpreter factory object.
+   */
+  protected function getInterpreterFactory($type, array $candidateIds) {
+    foreach ($candidateIds as $id) {
+      if (isset($this->interpreterFactoryRegistry[$type][$id])) {
+        return $this->interpreterFactoryRegistry[$type][$id];
+      }
+    }
+  }
+
+  /**
    * Reads an array from the stream.
    *
    * @return array
@@ -329,6 +367,16 @@ abstract class XMLStructReader {
  * - XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS
  */
 class DefaultXMLStructReader extends XMLStructReader {
+  /**
+   * Element interpreter type.
+   */
+  const INTERPRETER_ELEMENT = 'element';
+
+  /**
+   * Attribute interpreter type.
+   */
+  const INTERPRETER_ATTRIBUTE = 'attribute';
+
   /**
    * Context stack.
    * @var XMLStructReaderContext[]
@@ -407,13 +455,69 @@ class DefaultXMLStructReader extends XMLStructReader {
   }
 
   /**
+   * Registers a named interpreter factory.
+   *
+   * @param string $type
+   *   Interpreter type, as a primary classifier.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if no specific namespace.
+   * @param string $name
+   *   XML name.
+   * @param object
+   *   Interpreter factory object.
+   */
+  protected function registerNamedInterpreterFactory($type, $namespace, $name, $factory) {
+    // Mark factory as universal for namespace.
+    if (!isset($namespace)) {
+      $namespace = '*';
+    }
+    $id = "$namespace:$name";
+    $this->registerInterpreterFactory($type, $id, $factory);
+  }
+
+  /**
+   * Looks up a named interpreter factory.
+   *
+   * @param string $type
+   *   Interpreter type, as a primary classifier.
+   * @param string|null $namespace
+   *   Namespace URI, or NULL if no specific namespace.
+   * @param string $name
+   *   XML name.
+   * @return object
+   *   Interpreter factory object.
+   */
+  protected function getNamedInterpreterFactory($type, $namespace, $name) {
+    // Populate factory candidates.
+    $candidates = array();
+    $candidateName = $name;
+    $candidateNamespace = $namespace;
+    // Add qualified candidate.
+    if (isset($candidateNamespace)) {
+      $candidates[] = "$candidateNamespace:$candidateName";
+    }
+    // Add unqualified candidate.
+    $candidates[] = "*:$candidateName";
+    // Add qualified, but unnamed candidate.
+    if (isset($candidateNamespace)) {
+      $candidates[] = "$candidateNamespace:*";
+    }
+    // Add universal candidate.
+    $candidates[] = '*:*';
+    // Look up factory.
+    return $this->getInterpreterFactory($type, $candidates);
+  }
+
+  /**
    * Registers an element interpreter factory.
    *
    * @param XMLStructReader_ElementInterpreterFactory $factory
    *   Element interpreter factory.
    */
   protected function registerElementInterpreterFactory($factory) {
-    // TODO
+    $namespace = $factory->getNamespace();
+    $name = $factory->getElementName();
+    $this->registerNamedInterpreterFactory(self::INTERPRETER_ELEMENT, $namespace, $name, $factory);
   }
 
   /**
@@ -423,7 +527,9 @@ class DefaultXMLStructReader extends XMLStructReader {
    *   Attribute interpreter factory.
    */
   protected function registerAttributeInterpreterFactory($factory) {
-    // TODO
+    $namespace = $factory->getNamespace();
+    $name = $factory->getAttributeName();
+    $this->registerNamedInterpreterFactory(self::INTERPRETER_ATTRIBUTE, $namespace, $name, $factory);
   }
 
   /**
@@ -437,8 +543,7 @@ class DefaultXMLStructReader extends XMLStructReader {
    *   Element interpreter factory.
    */
   protected function getElementInterpreterFactory($name, $namespace = NULL) {
-    // TODO
-    return NULL;
+    return $this->getNamedInterpreterFactory(self::INTERPRETER_ELEMENT, $namespace, $name);
   }
 
   /**
@@ -452,8 +557,7 @@ class DefaultXMLStructReader extends XMLStructReader {
    *   Attribute interpreter factory.
    */
   protected function getAttributeInterpreterFactory($name, $namespace = NULL) {
-    // TODO
-    return NULL;
+    return $this->getNamedInterpreterFactory(self::INTERPRETER_ATTRIBUTE, $namespace, $name);
   }
 
   /**
