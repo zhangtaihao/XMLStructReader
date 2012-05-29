@@ -467,10 +467,14 @@ class DefaultXMLStructReader extends XMLStructReader {
    *   Interpreter factory object.
    */
   protected function registerNamedInterpreterFactory($type, $namespace, $name, $factory) {
-    // Mark factory as universal for namespace.
+    // Mark factory as universal.
     if (!isset($namespace)) {
       $namespace = '*';
     }
+    if (!isset($name)) {
+      $name = '*';
+    }
+    // Register on the fully qualified name (with wildcards).
     $id = "$namespace:$name";
     $this->registerInterpreterFactory($type, $id, $factory);
   }
@@ -825,9 +829,9 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
   /**
    * Returns the name of the element to interpret.
    *
-   * @return string
-   *   Name of the XML element, or an asterisk ('*') if all elements not
-   *   interpreted by other interpreters are processed.
+   * @return string|null
+   *   Name of the XML element, or NULL if all elements not interpreted by other
+   *   interpreters are processed.
    */
   public function getElementName();
 
@@ -854,8 +858,8 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
    * Returns the name of the attribute to interpret.
    *
    * @return string|null
-   *   Name of the XML attribute, or an asterisk ('*') if all attributes not
-   *   interpreted by other interpreters are processed.
+   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   *   other interpreters are processed.
    */
   public function getAttributeName();
 
