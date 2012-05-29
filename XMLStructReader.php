@@ -464,6 +464,7 @@ class DefaultXMLStructReader extends XMLStructReader {
     // Add default interpreters.
     $this->registerElementInterpreterFactory(new XMLStructReader_DefaultElementFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_DefaultAttributeFactory());
+    $this->registerAttributeInterpreterFactory(new XMLStructReader_StructAttributeFactory());
   }
 
   /**
@@ -1161,6 +1162,60 @@ class XMLStructReader_DefaultAttribute implements XMLStructReader_AttributeInter
    */
   public function handleAttribute($value) {
     $this->element->addData($value, $this->name);
+  }
+}
+
+/**
+ * XMLStructReader-namespaced attribute interpreter factory.
+ */
+class XMLStructReader_StructAttributeFactory implements XMLStructReader_AttributeInterpreterFactory {
+  /**
+   * Returns the namespace to interpret in.
+   *
+   * @return string
+   *   XMLStructReader namespaces.
+   */
+  public function getNamespace() {
+    return XMLStructReader::NS;
+  }
+
+  /**
+   * Returns the name of the attribute to interpret.
+   *
+   * @return null
+   *   All attributes.
+   */
+  public function getAttributeName() {}
+
+  /**
+   * Creates an attribute interpreter.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   * @param XMLStructReader_ElementInterpreter $element
+   *   Containing element interpreter.
+   * @return XMLStructReader_AttributeInterpreter
+   *   Attribute interpreter object.
+   */
+  public function createAttributeInterpreter($name, $context, $element) {
+    return new XMLStructReader_StructAttribute($name, $context, $element);
+  }
+}
+
+/**
+ * XMLStructReader-namespaced attribute interpreter.
+ */
+class XMLStructReader_StructAttribute extends XMLStructReader_DefaultAttribute {
+  /**
+   * Handles the element attribute.
+   *
+   * @param string $value
+   *   Attribute value.
+   */
+  public function handleAttribute($value) {
+    $this->context[$this->name] = $value;
   }
 }
 
