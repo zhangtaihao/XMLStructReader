@@ -679,10 +679,10 @@ class DefaultXMLStructReader extends XMLStructReader {
    * Handles element end.
    */
   public function endElement($parser, $name) {
-    // Pop context off.
-    $this->popContext();
     // Pop and handle element.
     $this->popElement()->handleElement();
+    // Pop context off.
+    $this->popContext();
   }
 
   /**
