@@ -1017,6 +1017,18 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     $this->name = $name;
     $this->context = $context;
     $this->parent = $parent;
+    // Initialize context for default element.
+    $this->initializeContext($context);
+  }
+
+  /**
+   * Initializes values for the context.
+   *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   */
+  protected function initializeContext($context) {
+    // TODO
   }
 
   /**
