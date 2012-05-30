@@ -12,21 +12,12 @@
  */
 
 /**
- * Option: whether to load included file.
- *
- * Possible values:
- * - TRUE
- * - FALSE (default)
- */
-define('XML_STRUCT_READER_OPTION_INCLUDED_LOAD', 'includedLoad');
-
-/**
  * Default base path for included file names.
  *
  * Possible values:
  * - Any valid directory path string. Default: . (current working directory)
  */
-define('XML_STRUCT_READER_OPTION_INCLUDED_PATH', 'includedPath');
+define('XML_STRUCT_READER_OPTION_INCLUDE_PATH', 'includePath');
 
 /**
  * Factory class to create reader for included files.
@@ -34,17 +25,7 @@ define('XML_STRUCT_READER_OPTION_INCLUDED_PATH', 'includedPath');
  * Possible values:
  * - Any valid findable class name. Default: XMLStructReaderFactory
  */
-define('XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY', 'includedReaderFactory');
-
-/**
- * Option: whether to use the same set of options for the reader of an included
- * XML file.
- *
- * Possible values:
- * - TRUE (default)
- * - FALSE
- */
-define('XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS', 'includedUseSameOptions');
+define('XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY', 'includeReaderFactory');
 
 /**
  * Base implementation of XML structured array parser.
@@ -384,10 +365,8 @@ abstract class XMLStructReader {
  * Default reader implementation.
  *
  * This reader supports the following options:
- * - XML_STRUCT_READER_OPTION_INCLUDED_LOAD
- * - XML_STRUCT_READER_OPTION_INCLUDED_PATH
- * - XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY
- * - XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS
+ * - XML_STRUCT_READER_OPTION_INCLUDE_PATH
+ * - XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY
  */
 class DefaultXMLStructReader extends XMLStructReader {
   /**
@@ -438,10 +417,8 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   protected function getDefaultOptions() {
     return array(
-      XML_STRUCT_READER_OPTION_INCLUDED_LOAD => FALSE,
-      XML_STRUCT_READER_OPTION_INCLUDED_PATH => NULL,
-      XML_STRUCT_READER_OPTION_INCLUDED_READER_FACTORY => 'XMLStructReaderFactory',
-      XML_STRUCT_READER_OPTION_INCLUDED_SAME_OPTIONS => TRUE,
+      XML_STRUCT_READER_OPTION_INCLUDE_PATH => NULL,
+      XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY => 'DefaultXMLStructReaderFactory',
     ) + parent::getDefaultOptions();
   }
 
