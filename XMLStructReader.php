@@ -146,6 +146,8 @@ abstract class XMLStructReader {
     if (array_key_exists($option, $this->options)) {
       return $this->options[$option];
     }
+    // Return nothing by default.
+    return NULL;
   }
 
   /**
@@ -212,7 +214,7 @@ abstract class XMLStructReader {
   /**
    * Gets the reader context.
    *
-   * @param XMLStructReaderContext $context
+   * @return XMLStructReaderContext
    *   Context to use.
    */
   public function getContext() {
@@ -274,6 +276,8 @@ abstract class XMLStructReader {
         return $this->interpreterFactoryRegistry[$type][$id];
       }
     }
+    // Return nothing by default.
+    return NULL;
   }
 
   /**
@@ -283,6 +287,8 @@ abstract class XMLStructReader {
    *   Structured array.
    * @throws RuntimeException
    *   If no data could be read.
+   * @throws XMLStructReaderException
+   *   If an error occurred while parsing.
    */
   public function read() {
     // Check data can be read.
@@ -673,6 +679,8 @@ class DefaultXMLStructReader extends XMLStructReader {
     if (isset($this->rootContainer)) {
       return $this->rootContainer->getData();
     }
+    // Return nothing by default.
+    return NULL;
   }
 }
 
@@ -700,6 +708,8 @@ abstract class XMLStructReaderFactory {
    * @param XMLStructReaderContext $context
    *   Parse context for the reader. Used internally to specify metadata about
    *   the base context to use when parsing with the created reader.
+   * @throws InvalidArgumentException
+   *   If either owner or context is not a valid object.
    */
   public function __construct($owner = NULL, $context = NULL) {
     // Check owner.
@@ -935,16 +945,16 @@ class XMLStructReader_DefaultElementFactory implements XMLStructReader_ElementIn
   /**
    * Returns the namespace to interpret in.
    *
-   * @return null
-   *   All namespaces.
+   * @return string|null
+   *   URI of the namespace, or NULL if no specific namespace.
    */
   public function getNamespace() {}
 
   /**
    * Returns the name of the element to interpret.
    *
-   * @return null
-   *   All elements.
+   * @return string|null
+   *   URI of the namespace, or NULL if no specific namespace.
    */
   public function getElementName() {}
 
@@ -1063,16 +1073,17 @@ class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_Attribu
   /**
    * Returns the namespace to interpret in.
    *
-   * @return null
-   *   All namespaces.
+   * @return string|null
+   *   URI of the namespace, or NULL if no specific namespace.
    */
   public function getNamespace() {}
 
   /**
    * Returns the name of the attribute to interpret.
    *
-   * @return null
-   *   All attributes.
+   * @return string|null
+   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   *   other interpreters are processed.
    */
   public function getAttributeName() {}
 
@@ -1159,8 +1170,9 @@ class XMLStructReader_StructAttributeFactory implements XMLStructReader_Attribut
   /**
    * Returns the name of the attribute to interpret.
    *
-   * @return null
-   *   All attributes.
+   * @return string|null
+   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   *   other interpreters are processed.
    */
   public function getAttributeName() {}
 
@@ -1220,6 +1232,8 @@ class XMLStructReader_StreamDelegate {
    *
    * @param mixed $file
    *   File handle or SplFileObject.
+   * @throws InvalidArgumentException
+   *   If the file parameter is invalid.
    */
   public function __construct($file) {
     if (is_resource($file) && get_resource_type($file) == 'stream') {
