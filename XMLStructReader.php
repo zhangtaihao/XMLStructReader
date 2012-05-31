@@ -1103,7 +1103,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    */
   public function processElement() {
     if (isset($this->parent)) {
-      $this->parent->addData($this->getData(), $this->name);
+      $this->parent->addData($this->name, $this->getData());
     }
   }
 
