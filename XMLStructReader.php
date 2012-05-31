@@ -1055,6 +1055,12 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   protected $data = array();
 
   /**
+   * Flag to trim left.
+   * @var boolean
+   */
+  private $trimLeft = TRUE;
+
+  /**
    * Creates an element interpreter.
    *
    * @param string $name
@@ -1111,6 +1117,13 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
       'key' => $key,
       'data' => $data,
     );
+    // Right trim the element value before the child element.
+    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
+      $this->value = rtrim($this->value);
+      // Mark the next character data for left trim.
+      // See self::addCharacterData() for left trim.
+      $this->trimLeft = TRUE;
+    }
   }
 
   /**
@@ -1133,20 +1146,17 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Raw character data from XML parser.
    */
   public function addCharacterData($data) {
-    $optionTextTrim = $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM);
     $optionTextSkipEmpty = $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY);
-    // Trim text.
-    $trimmedData = '';
-    if (!empty($optionTextTrim) || !empty($optionTextSkipEmpty)) {
-      $trimmedData = trim($data);
-    }
     // Skip empty text.
-    if (!empty($optionTextSkipEmpty) && strlen($trimmedData) == 0) {
+    if (!empty($optionTextSkipEmpty) && strlen(trim($data)) == 0) {
       return;
     }
-    // Use trimmed text.
-    if (!empty($optionTextTrim)) {
-      $data = $trimmedData;
+    // Trim left.
+    if ($this->trimLeft && $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
+      $data = ltrim($data);
+      // Only trim left once until the flag is set again.
+      // See self::addData() for trim right.
+      $this->trimLeft = FALSE;
     }
     // Append text to value.
     $this->value .= $data;
@@ -1156,6 +1166,11 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    * Handles the element (complete with data) as it ends.
    */
   public function processElement() {
+    // Right trim the element value before the end.
+    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
+      $this->value = rtrim($this->value);
+    }
+    // Add data to parent.
     if (isset($this->parent) && NULL !== $data = $this->getData()) {
       $this->parent->addData($this->name, $data);
     }
