@@ -1,11 +1,12 @@
 <?php
 
+require_once 'XMLStructReaderTest.inc.php';
 require_once 'XMLStructReaderAPI.inc.php';
 
 /**
  * Reader factory test.
  */
-class XMLStructReaderFactoryAPITest extends PHPUnit_Framework_TestCase {
+class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
   public function testCreateFactory() {
     $factory = new TestXMLStructReaderFactory();
     $this->assertTrue(is_object($factory), 'Basic factory can be created.');
@@ -69,16 +70,16 @@ class XMLStructReaderFactoryAPITest extends PHPUnit_Framework_TestCase {
     $this->assertTrue(is_object($subFactory) && is_object($subFactory->owner), 'Basic factory can be created with a context.');
   }
 
-  protected function getDataPath() {
+  protected function getXMLPath() {
     $xml = '<root/>';
-    return 'data://text/plain,' . $xml;
+    return $this->createXMLPath($xml);
   }
 
   public function fileProvider() {
-    return array(array(new SplFileObject($this->getDataPath())));
+    return array(array(new SplFileObject($this->getXMLPath())));
   }
 
   public function pathProvider() {
-    return array(array($this->getDataPath()));
+    return array(array($this->getXMLPath()));
   }
 }

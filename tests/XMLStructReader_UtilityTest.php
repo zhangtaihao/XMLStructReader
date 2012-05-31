@@ -1,31 +1,32 @@
 <?php
 
+require_once 'XMLStructReaderTest.inc.php';
 require_once 'XMLStructReader.php';
 
 /**
  * Stream delegate utility test.
  */
-class XMLStructReader_StreamDelegateTest extends PHPUnit_Framework_TestCase {
-  protected $xmlFile;
+class XMLStructReader_StreamDelegateTest extends XMLStructReaderTestCase {
+  protected $xmlPath;
 
-  protected function getXMLFile() {
-    if (!isset($this->xmlFile)) {
+  protected function getXMLPath() {
+    if (!isset($this->xmlPath)) {
       $xml = "<root>\n" .
         "  <element>\n" .
         "    <property>value</property>\n" .
         "  </element>\n" .
         "</root>";
-      $this->xmlFile = 'data://text/plain,' . $xml;
+      $this->xmlPath = $this->createXMLPath($xml);
     }
-    return $this->xmlFile;
+    return $this->xmlPath;
   }
 
   protected function createResourceDelegate() {
-    return new XMLStructReader_StreamDelegate(fopen($this->getXMLFile(), 'r'));
+    return new XMLStructReader_StreamDelegate(fopen($this->getXMLPath(), 'r'));
   }
 
   protected function createObjectDelegate() {
-    return new XMLStructReader_StreamDelegate(new SplFileObject($this->getXMLFile()));
+    return new XMLStructReader_StreamDelegate(new SplFileObject($this->getXMLPath()));
   }
 
   protected function getExpectedLines() {

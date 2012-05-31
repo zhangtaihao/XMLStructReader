@@ -1,11 +1,12 @@
 <?php
 
+require_once 'XMLStructReaderTest.inc.php';
 require_once 'XMLStructReaderAPI.inc.php';
 
 /**
  * Reader and factory tests.
  */
-class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
+class XMLStructReaderAPITest extends XMLStructReaderTestCase {
   /**
    * @dataProvider delegateProvider
    */
@@ -156,58 +157,32 @@ class XMLStructReaderAPITest extends PHPUnit_Framework_TestCase {
     $reader->read();
   }
 
-  protected function getDataPath() {
-    $xml = '<test attr="value">content</test>';
-    return 'data://text/plain,' . $xml;
+  public function dataBasic() {
+    return '<test attr="value">content</test>';
   }
 
-  protected function createDelegate() {
-    // @codeCoverageIgnoreStart
-    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($this->getDataPath()));
-    // @codeCoverageIgnoreEnd
-    return $delegate;
-  }
-
-  protected function getMultilineDataPath() {
-    return 'data://text/plain,<test attr="value">
+  public function dataMultiline() {
+    return '<test attr="value">
       content
     </test>';
   }
 
-  protected function createMultilineDelegate() {
-    // @codeCoverageIgnoreStart
-    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($this->getMultilineDataPath()));
-    // @codeCoverageIgnoreEnd
-    return $delegate;
+  public function dataSets() {
+    return array('dataBasic', 'dataMultiline');
   }
 
-  public function delegateProvider() {
-    return array(
-      array($this->createDelegate()),
-      array($this->createMultilineDelegate()),
-    );
+  protected function dataInvalid() {
+    return '<invalid></test>';
   }
 
-  protected function createInvalidDelegate() {
-    // @codeCoverageIgnoreStart
-    $xmlPath = 'data://text/plain,<invalid></test>';
-    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($xmlPath));
-    // @codeCoverageIgnoreEnd
-    return $delegate;
-  }
-
-  protected function createInvalidEntityDelegate() {
-    // @codeCoverageIgnoreStart
-    $xmlPath = 'data://text/plain,<test>&unknown;</test>';
-    $delegate = new XMLStructReader_StreamDelegate(new SplFileObject($xmlPath));
-    // @codeCoverageIgnoreEnd
-    return $delegate;
+  protected function dataInvalidEntity() {
+    return '<test>&unknown;</test>';
   }
 
   public function invalidDelegateProvider() {
     return array(
-      array($this->createInvalidDelegate()),
-      array($this->createInvalidEntityDelegate()),
+      array($this->createXMLDelegate($this->dataInvalid())),
+      array($this->createXMLDelegate($this->dataInvalidEntity())),
     );
   }
 }
