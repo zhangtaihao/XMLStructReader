@@ -1040,6 +1040,12 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   protected $parent;
 
   /**
+   * Attribute values.
+   * @var array
+   */
+  protected $attributes = array();
+
+  /**
    * Element text value.
    * @var string
    */
@@ -1104,8 +1110,8 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Attribute value.
    */
   public function addAttribute($name, $value) {
-    // Add attribute as data.
-    $this->addData($name, $value);
+    // Add attribute value.
+    $this->attributes[$name] = $value;
   }
 
   /**
@@ -1151,6 +1157,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    */
   public function getData() {
     // TODO Switch data addition behavior.
+    // TODO Merge attribute values.
     return $this->data;
   }
 }
