@@ -1330,6 +1330,19 @@ class XMLStructReader_StructAttribute extends XMLStructReader_DefaultAttribute {
    *   Attribute value.
    */
   public function processAttribute($value) {
+    // Use NULL value.
+    if ($value == 'php:null') {
+      $value = NULL;
+    }
+    // Use TRUE value.
+    elseif ($value == 'php:true') {
+      $value = TRUE;
+    }
+    // Use FALSE value.
+    elseif ($value == 'php:false') {
+      $value = FALSE;
+    }
+    // Set context.
     $this->context[$this->name] = $value;
   }
 }
