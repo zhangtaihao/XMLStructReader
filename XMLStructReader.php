@@ -437,9 +437,6 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   protected function setUp() {
     parent::setUp();
-    // Set up root container.
-    $this->rootContainer = new XMLStructReader_DefaultRootContainer($this->context, $this);
-    $this->pushElement($this->rootContainer);
     // Set up interpreters.
     $this->setUpInterpreters();
   }
@@ -575,6 +572,26 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   protected function getAttributeInterpreterFactory($name, $namespace = NULL) {
     return $this->getNamedInterpreterFactory(self::INTERPRETER_ATTRIBUTE, $namespace, $name);
+  }
+
+  /**
+   * Reads an array from the stream.
+   *
+   * @return array
+   *   Structured array.
+   * @throws RuntimeException
+   *   If no data could be read.
+   * @throws XMLStructReaderException
+   *   If an error occurred while parsing.
+   */
+  public function read() {
+    // Set up root container.
+    $this->rootContainer = new XMLStructReader_DefaultRootContainer($this->context, $this);
+    $this->pushElement($this->rootContainer);
+    // Read data.
+    $data = parent::read();
+    $this->popElement();
+    return $data;
   }
 
   /**
@@ -1065,13 +1082,19 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // Remove list element context for single use.
-    if (isset($context['listElement'])) {
-      unset($context['listElement']);
+    // Track the first root context.
+    if (!empty($context['root'])) {
+      unset($context['root']);
     }
-    // Remove text key context for single use.
-    if (isset($context['textKey'])) {
-      unset($context['textKey']);
+    else {
+      // Remove list element context for single use.
+      if (isset($context['listElement'])) {
+        unset($context['listElement']);
+      }
+      // Remove text key context for single use.
+      if (isset($context['textKey'])) {
+        unset($context['textKey']);
+      }
     }
   }
 
@@ -1202,6 +1225,17 @@ class XMLStructReader_DefaultRootContainer extends XMLStructReader_DefaultElemen
    */
   public function __construct($context, $reader) {
     parent::__construct(NULL, $context, $reader);
+  }
+
+  /**
+   * Initializes values for the context.
+   *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   */
+  protected function initializeContext($context) {
+    // Set up root element.
+    $context['root'] = TRUE;
   }
 }
 
