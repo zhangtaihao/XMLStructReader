@@ -67,7 +67,7 @@ class TestNullXMLStructReader extends DefaultXMLStructReader {
 class TestNullAttributeXMLStructReader extends DefaultXMLStructReader {
   protected function setUpInterpreters() {
     // @codeCoverageIgnoreStart
-    $this->registerElementInterpreterFactory(new NullElementInterpreterFactory());
+    $this->registerElementInterpreterFactory(new TestNullElementInterpreterFactory());
     // @codeCoverageIgnoreEnd
   }
 }
@@ -75,7 +75,7 @@ class TestNullAttributeXMLStructReader extends DefaultXMLStructReader {
 /**
  * Element interpreter that does nothing.
  */
-class NullElementInterpreterFactory implements XMLStructReader_ElementInterpreterFactory {
+class TestNullElementInterpreterFactory implements XMLStructReader_ElementInterpreterFactory {
   public function getNamespace() {
     return '*';
   }
@@ -83,14 +83,14 @@ class NullElementInterpreterFactory implements XMLStructReader_ElementInterprete
     return '*';
   }
   public function createElementInterpreter($name, $context, $reader, $parent = NULL) {
-    return new NullElementInterpreter();
+    return new TestNullElementInterpreter();
   }
 }
 
 /**
  * Element interpreter that does nothing.
  */
-class NullElementInterpreter implements XMLStructReader_ElementInterpreter {
+class TestNullElementInterpreter implements XMLStructReader_ElementInterpreter {
   public function addData($key, $data) {}
   public function addAttribute($name, $value) {}
   public function addCharacterData($data) {}
