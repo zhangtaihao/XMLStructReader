@@ -316,27 +316,10 @@ abstract class XMLStructReader {
     }
 
     // Read data.
-    $isFinal = FALSE;
-    $line = NULL;
-    if (!$this->fileDelegate->isEOF()) {
+    while (!$this->fileDelegate->isEOF()) {
       $line = $this->fileDelegate->readLine();
-    }
-    while (isset($line)) {
-      if (!xml_parse($this->parser, $line, $isFinal)) {
+      if (!xml_parse($this->parser, $line, $this->fileDelegate->isEOF())) {
         throw new XMLStructReaderException(sprintf('Error while parsing line %d: %s', xml_get_current_line_number($this->parser), xml_error_string(xml_get_error_code($this->parser))));
-      }
-      // Finish.
-      if ($isFinal) {
-        break;
-      }
-      // Trigger entity error reporting at the end.
-      elseif ($this->fileDelegate->isEOF()) {
-        $isFinal = TRUE;
-        $line = '';
-      }
-      // Read next line.
-      else {
-        $line = $this->fileDelegate->readLine();
       }
     }
     $this->cleanUp();
