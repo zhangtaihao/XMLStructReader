@@ -507,13 +507,6 @@ class DefaultXMLStructReader extends XMLStructReader {
    *   Interpreter factory object.
    */
   protected function registerNamedInterpreterFactory($type, $namespace, $name, $factory) {
-    // Mark factory as universal.
-    if (!isset($namespace)) {
-      $namespace = '*';
-    }
-    if (!isset($name)) {
-      $name = '*';
-    }
     // Register on the fully qualified name (with wildcards).
     $id = "$namespace:$name";
     $this->registerInterpreterFactory($type, $id, $factory);
@@ -537,15 +530,11 @@ class DefaultXMLStructReader extends XMLStructReader {
     $candidateName = $name;
     $candidateNamespace = $namespace;
     // Add qualified candidate.
-    if (isset($candidateNamespace)) {
-      $candidates[] = "$candidateNamespace:$candidateName";
-    }
+    $candidates[] = "$candidateNamespace:$candidateName";
     // Add unqualified candidate.
     $candidates[] = "*:$candidateName";
-    // Add qualified, but unnamed candidate.
-    if (isset($candidateNamespace)) {
-      $candidates[] = "$candidateNamespace:*";
-    }
+    // Add unnamed qualified candidate.
+    $candidates[] = "$candidateNamespace:*";
     // Add universal candidate.
     $candidates[] = '*:*';
     // Look up factory.
@@ -848,7 +837,8 @@ interface XMLStructReader_InterpreterFactory {
    * Returns the namespace to interpret in.
    *
    * @return string|null
-   *   URI of the namespace, or NULL if no specific namespace.
+   *   URI of the namespace, NULL if no namespace, or '*' if all other
+   *   unprocessed namespaces.
    */
   public function getNamespace();
 }
@@ -860,8 +850,8 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
   /**
    * Returns the name of the element to interpret.
    *
-   * @return string|null
-   *   Name of the XML element, or NULL if all elements not interpreted by other
+   * @return string
+   *   Name of the XML element, or '*' if all elements not interpreted by other
    *   interpreters are processed.
    */
   public function getElementName();
@@ -890,8 +880,8 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
   /**
    * Returns the name of the attribute to interpret.
    *
-   * @return string|null
-   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   * @return string
+   *   Name of the XML attribute, or '*' if all elements not interpreted by
    *   other interpreters are processed.
    */
   public function getAttributeName();
@@ -980,17 +970,23 @@ class XMLStructReader_DefaultElementFactory implements XMLStructReader_ElementIn
    * Returns the namespace to interpret in.
    *
    * @return string|null
-   *   URI of the namespace, or NULL if no specific namespace.
+   *   URI of the namespace, NULL if no namespace, or '*' if all other
+   *   unprocessed namespaces.
    */
-  public function getNamespace() {}
+  public function getNamespace() {
+    return '*';
+  }
 
   /**
    * Returns the name of the element to interpret.
    *
-   * @return string|null
-   *   URI of the namespace, or NULL if no specific namespace.
+   * @return string
+   *   Name of the XML element, or '*' if all elements not interpreted by other
+   *   interpreters are processed.
    */
-  public function getElementName() {}
+  public function getElementName() {
+    return '*';
+  }
 
   /**
    * Creates an element interpreter.
@@ -1187,18 +1183,23 @@ class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_Attribu
    * Returns the namespace to interpret in.
    *
    * @return string|null
-   *   URI of the namespace, or NULL if no specific namespace.
+   *   URI of the namespace, NULL if no namespace, or '*' if all other
+   *   unprocessed namespaces.
    */
-  public function getNamespace() {}
+  public function getNamespace() {
+    return '*';
+  }
 
   /**
    * Returns the name of the attribute to interpret.
    *
-   * @return string|null
-   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   * @return string
+   *   Name of the XML attribute, or '*' if all elements not interpreted by
    *   other interpreters are processed.
    */
-  public function getAttributeName() {}
+  public function getAttributeName() {
+    return '*';
+  }
 
   /**
    * Creates an attribute interpreter.
@@ -1294,11 +1295,13 @@ class XMLStructReader_StructAttributeFactory implements XMLStructReader_Attribut
   /**
    * Returns the name of the attribute to interpret.
    *
-   * @return string|null
-   *   Name of the XML attribute, or NULL if all elements not interpreted by
+   * @return string
+   *   Name of the XML attribute, or '*' if all elements not interpreted by
    *   other interpreters are processed.
    */
-  public function getAttributeName() {}
+  public function getAttributeName() {
+    return '*';
+  }
 
   /**
    * Creates an attribute interpreter.
