@@ -119,7 +119,7 @@ class TestNullAttributeXMLStructReader extends DefaultXMLStructReader {
 class NullElementInterpreterFactory implements XMLStructReader_ElementInterpreterFactory {
   public function getNamespace() {}
   public function getElementName() {}
-  public function createElementInterpreter($name, $context, $parent = NULL) {
+  public function createElementInterpreter($name, $context, $reader, $parent = NULL) {
     return new NullElementInterpreter();
   }
 }
@@ -128,8 +128,9 @@ class NullElementInterpreterFactory implements XMLStructReader_ElementInterprete
  * Element interpreter that does nothing.
  */
 class NullElementInterpreter implements XMLStructReader_ElementInterpreter {
-  public function addData($data, $key = NULL) {}
-  public function handleCData($data) {}
-  public function handleElement() {}
+  public function addData($key, $data) {}
+  public function addAttribute($name, $value) {}
+  public function addCharacterData($data) {}
+  public function processElement() {}
   public function getData() {}
 }

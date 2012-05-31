@@ -434,7 +434,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected function setUp() {
     parent::setUp();
     // Set up root container.
-    $this->rootContainer = new XMLStructReader_DefaultElement(NULL, $this->context);
+    $this->rootContainer = new XMLStructReader_DefaultRootContainer($this->context, $this);
     $this->pushElement($this->rootContainer);
     // Set up interpreters.
     $this->setUpInterpreters();
@@ -630,7 +630,7 @@ class DefaultXMLStructReader extends XMLStructReader {
     }
 
     // Create interpreter with parent.
-    $element = $factory->createElementInterpreter($elementName, $context, $this->getElement());
+    $element = $factory->createElementInterpreter($elementName, $context, $this, $this->getElement());
     $this->pushElement($element);
 
     // Process attributes.
@@ -642,10 +642,10 @@ class DefaultXMLStructReader extends XMLStructReader {
       }
 
       // Create attribute interpreter for element.
-      $attribute = $factory->createAttributeInterpreter($attributeName, $context, $element);
+      $attribute = $factory->createAttributeInterpreter($attributeName, $context, $this, $element);
 
-      // Handle attribute.
-      $attribute->handleAttribute($attrValue);
+      // Process attribute.
+      $attribute->processAttribute($attrValue);
     }
   }
 
@@ -655,7 +655,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   public function characterData($parser, $data) {
     // Handle element data.
     if ($element = $this->getElement()) {
-      $element->handleCData($data);
+      $element->addCharacterData($data);
     }
   }
 
@@ -664,7 +664,7 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   public function endElement($parser, $name) {
     // Pop and handle element.
-    $this->popElement()->handleElement();
+    $this->popElement()->processElement();
     // Pop context off.
     $this->popContext();
   }
@@ -852,12 +852,14 @@ interface XMLStructReader_ElementInterpreterFactory extends XMLStructReader_Inte
    *   Element name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $parent
    *   Parent element interpreter.
    * @return XMLStructReader_ElementInterpreter
    *   Element interpreter object.
    */
-  public function createElementInterpreter($name, $context, $parent = NULL);
+  public function createElementInterpreter($name, $context, $reader, $parent = NULL);
 }
 
 /**
@@ -880,12 +882,14 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
    *   Attribute name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $element
    *   Containing element interpreter.
    * @return XMLStructReader_AttributeInterpreter
    *   Attribute interpreter object.
    */
-  public function createAttributeInterpreter($name, $context, $element);
+  public function createAttributeInterpreter($name, $context, $reader, $element);
 }
 
 /**
@@ -895,26 +899,35 @@ interface XMLStructReader_ElementInterpreter {
   /**
    * Adds data for the element.
    *
+   * @param string $key
+   *   Data key, e.g. child element name.
    * @param mixed $data
    *   Data to add.
-   * @param string|null $key
-   *   Data key, or NULL if none applicable.
    */
-  public function addData($data, $key = NULL);
+  public function addData($key, $data);
 
   /**
-   * Handles character data for the element. Where possible, use self::addData()
-   * preferentially to populate element data.
+   * Adds element attribute.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param string $value
+   *   Attribute value.
+   */
+  public function addAttribute($name, $value);
+
+  /**
+   * Adds character data for the element.
    *
    * @param string $data
    *   Raw character data from XML parser.
    */
-  public function handleCData($data);
+  public function addCharacterData($data);
 
   /**
    * Handles the element (complete with data) as it ends.
    */
-  public function handleElement();
+  public function processElement();
 
   /**
    * Gets the element data.
@@ -935,7 +948,7 @@ interface XMLStructReader_AttributeInterpreter {
    * @param string $value
    *   Attribute value.
    */
-  public function handleAttribute($value);
+  public function processAttribute($value);
 }
 
 /**
@@ -965,13 +978,15 @@ class XMLStructReader_DefaultElementFactory implements XMLStructReader_ElementIn
    *   Element name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $parent
    *   Parent element interpreter.
    * @return XMLStructReader_ElementInterpreter
    *   Element interpreter object.
    */
-  public function createElementInterpreter($name, $context, $parent = NULL) {
-    return new XMLStructReader_DefaultElement($name, $context, $parent);
+  public function createElementInterpreter($name, $context, $reader, $parent = NULL) {
+    return new XMLStructReader_DefaultElement($name, $context, $reader, $parent);
   }
 }
 
@@ -992,13 +1007,25 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   protected $context;
 
   /**
+   * Associated reader
+   * @var XMLStructReader
+   */
+  protected $reader;
+
+  /**
    * Parent element.
    * @var XMLStructReader_ElementInterpreter
    */
   protected $parent;
 
   /**
-   * Element data.
+   * Element text value.
+   * @var string
+   */
+  protected $value = '';
+
+  /**
+   * Element children data.
    * @var array
    */
   protected $data = array();
@@ -1010,12 +1037,15 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Element name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $parent
    *   Parent element interpreter.
    */
-  public function __construct($name, $context, $parent = NULL) {
+  public function __construct($name, $context, $reader, $parent = NULL) {
     $this->name = $name;
     $this->context = $context;
+    $this->reader = $reader;
     $this->parent = $parent;
     // Initialize context for default element.
     $this->initializeContext($context);
@@ -1028,40 +1058,50 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // TODO
+    // Do nothing for the default element.
   }
 
   /**
    * Adds data for the element.
    *
+   * @param string $key
+   *   Data key, e.g. child element name.
    * @param mixed $data
    *   Data to add.
-   * @param string|null $key
-   *   Data key, or NULL if none applicable, e.g. character data.
    */
-  public function addData($data, $key = NULL) {
-    $this->data[$key] = $data;
-
+  public function addData($key, $data) {
     // TODO Switch data addition behavior.
+    $this->data[$key] = $data;
   }
 
   /**
-   * Handles character data for the element. Where possible, use self::addData()
-   * preferentially to populate element data.
+   * Adds element attribute.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param string $value
+   *   Attribute value.
+   */
+  public function addAttribute($name, $value) {
+    // Add attribute as data.
+    $this->addData($name, $value);
+  }
+
+  /**
+   * Adds character data for the element.
    *
    * @param string $data
    *   Raw character data from XML parser.
    */
-  public function handleCData($data) {
-    $this->addData($data, NULL);
-
+  public function addCharacterData($data) {
     // TODO Switch data addition behavior.
+    $this->value .= $data;
   }
 
   /**
    * Handles the element (complete with data) as it ends.
    */
-  public function handleElement() {
+  public function processElement() {
     if (isset($this->parent)) {
       $this->parent->addData($this->getData(), $this->name);
     }
@@ -1074,7 +1114,25 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Element data.
    */
   public function getData() {
+    // TODO Switch data addition behavior.
     return $this->data;
+  }
+}
+
+/**
+ * Default reader root container element.
+ */
+class XMLStructReader_DefaultRootContainer extends XMLStructReader_DefaultElement {
+  /**
+   * Constructs a basic root element.
+   *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
+   */
+  public function __construct($context, $reader) {
+    parent::__construct(NULL, $context, $reader);
   }
 }
 
@@ -1106,13 +1164,15 @@ class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_Attribu
    *   Attribute name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $element
    *   Containing element interpreter.
    * @return XMLStructReader_AttributeInterpreter
    *   Attribute interpreter object.
    */
-  public function createAttributeInterpreter($name, $context, $element) {
-    return new XMLStructReader_DefaultAttribute($name, $context, $element);
+  public function createAttributeInterpreter($name, $context, $reader, $element) {
+    return new XMLStructReader_DefaultAttribute($name, $context, $reader, $element);
   }
 }
 
@@ -1133,6 +1193,12 @@ class XMLStructReader_DefaultAttribute implements XMLStructReader_AttributeInter
   protected $context;
 
   /**
+   * Associated reader.
+   * @var XMLStructReader
+   */
+  protected $reader;
+
+  /**
    * Containing element.
    * @var XMLStructReader_ElementInterpreter
    */
@@ -1145,12 +1211,15 @@ class XMLStructReader_DefaultAttribute implements XMLStructReader_AttributeInter
    *   Attribute name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $element
    *   Containing element interpreter.
    */
-  public function __construct($name, $context, $element = NULL) {
+  public function __construct($name, $context, $reader, $element = NULL) {
     $this->name = $name;
     $this->context = $context;
+    $this->reader = $reader;
     $this->element = $element;
   }
 
@@ -1160,8 +1229,8 @@ class XMLStructReader_DefaultAttribute implements XMLStructReader_AttributeInter
    * @param string $value
    *   Attribute value.
    */
-  public function handleAttribute($value) {
-    $this->element->addData($value, $this->name);
+  public function processAttribute($value) {
+    $this->element->addAttribute($this->name, $value);
   }
 }
 
@@ -1195,13 +1264,15 @@ class XMLStructReader_StructAttributeFactory implements XMLStructReader_Attribut
    *   Attribute name.
    * @param XMLStructReaderContext $context
    *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
    * @param XMLStructReader_ElementInterpreter $element
    *   Containing element interpreter.
    * @return XMLStructReader_AttributeInterpreter
    *   Attribute interpreter object.
    */
-  public function createAttributeInterpreter($name, $context, $element) {
-    return new XMLStructReader_StructAttribute($name, $context, $element);
+  public function createAttributeInterpreter($name, $context, $reader, $element) {
+    return new XMLStructReader_StructAttribute($name, $context, $reader, $element);
   }
 }
 
@@ -1215,7 +1286,7 @@ class XMLStructReader_StructAttribute extends XMLStructReader_DefaultAttribute {
    * @param string $value
    *   Attribute value.
    */
-  public function handleAttribute($value) {
+  public function processAttribute($value) {
     $this->context[$this->name] = $value;
   }
 }
