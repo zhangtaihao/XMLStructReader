@@ -461,6 +461,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected function setUpInterpreters() {
     // Add default interpreters.
     $this->registerElementInterpreterFactory(new XMLStructReader_DefaultElementFactory());
+    $this->registerElementInterpreterFactory(new XMLStructReader_StructIncludeFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_DefaultWildcardAttributeFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_DefaultAttributeFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_StructAttributeFactory());
@@ -1393,11 +1394,30 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
     // Build data.
     if (!isset($this->data)) {
       $factoryClass = $this->reader->getOption(XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY);
-      if (class_exists($factoryClass)) {
-        // TODO Locate file.
-        // TODO Read file.
-        /** @var $factory XMLStructReaderFactory */
-        $factory = new $factoryClass($this->reader, $this->context);
+      if (class_exists($factoryClass) && isset($this->metadata['file'])) {
+        // Get file path.
+        $file = $this->metadata['file'];
+        $file = preg_replace_callback('!\$\{([^}]*)\}!', array($this, 'pregReplaceCallback'), $file);
+        // Derive include path.
+        $path = $this->reader->getOption(XML_STRUCT_READER_OPTION_INCLUDE_PATH);
+        $path = isset($path) ? rtrim($path, DIRECTORY_SEPARATOR) : NULL;
+        // Look up full path.
+        $fileObject = NULL;
+        if ($obj = $this->openFile($file)) {
+          $fileObject = $obj;
+        }
+        elseif (isset($path) && $obj = $this->openFile($path . DIRECTORY_SEPARATOR . $file)) {
+          $fileObject = $obj;
+        }
+        // Read file.
+        if (isset($fileObject)) {
+          /** @var $factory XMLStructReaderFactory */
+          $factory = new $factoryClass($this->reader, $this->context);
+          $reader = $factory->createReader($fileObject, $this->reader->getOptions());
+          // Cache read data.
+          $this->data = $reader->read();
+          return $this->data;
+        }
       }
       // Fail by default.
       $this->data = FALSE;
@@ -1408,6 +1428,37 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
     }
     // Fail otherwise.
     return NULL;
+  }
+
+  /**
+   * Creates a file object.
+   *
+   * @param string $path
+   *   File path or URL.
+   * @return SplFileObject|null
+   *   File object, or NULL if invalid path.
+   */
+  protected function openFile($path) {
+    // Try to open file without errors.
+    try {
+      return new SplFileObject($path);
+    }
+    catch (RuntimeException $ex) {
+      return NULL;
+    }
+  }
+
+  /**
+   * Callback for preg_replace_callback().
+   */
+  public function pregReplaceCallback($matches) {
+    $name = $matches[1];
+    // Replace constant.
+    if (defined($name)) {
+      return constant($name);
+    }
+    // Return empty replacement.
+    return '';
   }
 }
 
