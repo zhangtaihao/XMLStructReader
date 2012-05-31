@@ -31,7 +31,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
 
   /**
    * @dataProvider delegateProvider
-   * @expectedException RuntimeException
+   * @expectedException XMLStructReaderException
    * @expectedExceptionMessage No matching element interpreter is found.
    */
   public function testReadNullInterpreter($delegate) {
@@ -41,7 +41,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
 
   /**
    * @dataProvider delegateProvider
-   * @expectedException RuntimeException
+   * @expectedException XMLStructReaderException
    * @expectedExceptionMessage No matching attribute interpreter is found.
    */
   public function testReadNullAttributeInterpreter($delegate) {
