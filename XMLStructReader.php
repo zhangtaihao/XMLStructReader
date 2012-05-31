@@ -1227,6 +1227,177 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
 }
 
 /**
+ * Default element interpreter factory.
+ */
+class XMLStructReader_StructIncludeFactory implements XMLStructReader_ElementInterpreterFactory {
+  /**
+   * Returns the namespace to interpret in.
+   *
+   * @return string|null
+   *   URI of the namespace, NULL if no namespace, or '*' if all other
+   *   unprocessed namespaces.
+   */
+  public function getNamespace() {
+    return XMLStructReader::NS;
+  }
+
+  /**
+   * Returns the name of the element to interpret.
+   *
+   * @return string
+   *   Name of the XML element, or '*' if all elements not interpreted by other
+   *   interpreters are processed.
+   */
+  public function getElementName() {
+    return 'include';
+  }
+
+  /**
+   * Creates an element interpreter.
+   *
+   * @param string $name
+   *   Element name.
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
+   * @param XMLStructReader_ElementInterpreter $parent
+   *   Parent element interpreter.
+   * @return XMLStructReader_ElementInterpreter
+   *   Element interpreter object.
+   */
+  public function createElementInterpreter($name, $context, $reader, $parent = NULL) {
+    return new XMLStructReader_StructInclude($context, $reader, $parent);
+  }
+}
+
+/**
+ * Include element interpreter.
+ */
+class XMLStructReader_StructInclude implements XMLStructReader_ElementInterpreter {
+  /**
+   * Element context.
+   * @var XMLStructReaderContext
+   */
+  protected $context;
+
+  /**
+   * Associated reader
+   * @var XMLStructReader
+   */
+  protected $reader;
+
+  /**
+   * Parent element.
+   * @var XMLStructReader_ElementInterpreter
+   */
+  protected $parent;
+
+  /**
+   * Element metadata.
+   * @var array
+   */
+  protected $metadata = array();
+
+  /**
+   * Included data.
+   * @var mixed
+   */
+  protected $data;
+
+  /**
+   * Creates an element interpreter.
+   *
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
+   * @param XMLStructReader_ElementInterpreter $parent
+   *   Parent element interpreter.
+   */
+  public function __construct($context, $reader, $parent = NULL) {
+    $this->context = $context;
+    $this->reader = $reader;
+    $this->parent = $parent;
+  }
+
+  /**
+   * Adds data for the element.
+   *
+   * @param string $key
+   *   Data key, e.g. child element name.
+   * @param mixed $data
+   *   Data to add.
+   */
+  public function addData($key, $data) {
+    $this->metadata[$key] = $data;
+  }
+
+  /**
+   * Adds element attribute.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param string $value
+   *   Attribute value.
+   */
+  public function addAttribute($name, $value) {
+    // Add attribute value as data.
+    $this->metadata[$name] = $value;
+  }
+
+  /**
+   * Adds character data for the element.
+   *
+   * @param string $data
+   *   Raw character data from XML parser.
+   */
+  public function addCharacterData($data) {
+    // Do nothing.
+  }
+
+  /**
+   * Handles the element (complete with data) as it ends.
+   */
+  public function processElement() {
+    // Add data to parent.
+    if (isset($this->parent) && NULL !== $data = $this->getData()) {
+      // Add included data (using the included root element) to parent.
+      $includedData = reset($data);
+      $key = key($data);
+      $this->parent->addData($key, $includedData);
+    }
+  }
+
+  /**
+   * Gets the element data.
+   *
+   * @return mixed
+   *   Element data.
+   */
+  public function getData() {
+    // Build data.
+    if (!isset($this->data)) {
+      $factoryClass = $this->reader->getOption(XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY);
+      if (class_exists($factoryClass)) {
+        // TODO Locate file.
+        // TODO Read file.
+        /** @var $factory XMLStructReaderFactory */
+        $factory = new $factoryClass($this->reader, $this->context);
+      }
+      // Fail by default.
+      $this->data = FALSE;
+    }
+    // Return data.
+    elseif ($this->data !== FALSE) {
+      return $this->data;
+    }
+    // Fail otherwise.
+    return NULL;
+  }
+}
+
+/**
  * Default reader root container element.
  */
 class XMLStructReader_DefaultRootContainer extends XMLStructReader_DefaultElement {
