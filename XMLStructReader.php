@@ -1097,7 +1097,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Data to add.
    */
   public function addData($key, $data) {
-    // TODO Switch data addition behavior.
+    // Add element data.
     $this->data[$key] = $data;
   }
 
