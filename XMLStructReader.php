@@ -1064,7 +1064,10 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // Do nothing for the default element.
+    // Remove list element context from parent (as one-use).
+    if (isset($context['listElement'])) {
+      unset($context['listElement']);
+    }
   }
 
   /**
@@ -1076,8 +1079,10 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Data to add.
    */
   public function addData($key, $data) {
-    // Add element data.
-    $this->data[$key] = $data;
+    $this->data[] = array(
+      'key' => $key,
+      'data' => $data,
+    );
   }
 
   /**
@@ -1135,9 +1140,32 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Element data.
    */
   public function getData() {
-    // TODO Switch data addition behavior.
-    // TODO Merge attribute values.
-    return $this->data;
+    $data = array();
+    $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
+    // Use attributes as data.
+    foreach ($this->attributes as $key => $value) {
+      // Add attribute value as list item.
+      if ($listElement == '*' || $listElement === $key) {
+        $data[] = $value;
+      }
+      // Add attribute value as struct value.
+      else {
+        $data[$key] = $value;
+      }
+    }
+    // Merge element data.
+    foreach ($this->data as $item) {
+      // Add attribute value as list item.
+      if ($listElement == '*' || $listElement === $item['key']) {
+        $data[] = $item['data'];
+      }
+      // Add attribute value as struct value.
+      else {
+        $data[$item['key']] = $item['data'];
+      }
+    }
+
+    return $data;
   }
 }
 
@@ -1170,7 +1198,8 @@ class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_Attribu
    *   unprocessed namespaces.
    */
   public function getNamespace() {
-    return '*';
+    // Only handle attributes with no namespace.
+    return NULL;
   }
 
   /**
