@@ -323,7 +323,7 @@ abstract class XMLStructReader {
     }
     while (isset($line)) {
       if (!xml_parse($this->parser, $line, $isFinal)) {
-        throw new XMLStructReaderException('Error while parsing: ' . xml_error_string(xml_get_error_code($this->parser)));
+        throw new XMLStructReaderException(sprintf('Error while parsing line %d: %s', xml_get_current_line_number($this->parser), xml_error_string(xml_get_error_code($this->parser))));
       }
       // Finish.
       if ($isFinal) {
@@ -647,7 +647,7 @@ class DefaultXMLStructReader extends XMLStructReader {
     // Look up element interpreter factory.
     list($elementNamespace, $elementName) = $this->resolveQualifiedName($name);
     if (!$factory = $this->getElementInterpreterFactory($elementName, $elementNamespace)) {
-      throw new RuntimeException('No matching element interpreter is found.');
+      throw new XMLStructReaderException('No matching element interpreter is found.');
     }
 
     // Create interpreter with parent.
@@ -659,7 +659,7 @@ class DefaultXMLStructReader extends XMLStructReader {
       // Look up attribute interpreter factory.
       list($attributeNamespace, $attributeName) = $this->resolveQualifiedName($attrName);
       if (!$factory = $this->getAttributeInterpreterFactory($attributeName, $attributeNamespace)) {
-        throw new RuntimeException('No matching attribute interpreter is found.');
+        throw new XMLStructReaderException('No matching attribute interpreter is found.');
       }
 
       // Create attribute interpreter for element.
@@ -838,7 +838,7 @@ class XMLStructReaderContext extends ArrayObject {
 /**
  * Generic exception during typical reader usage.
  */
-class XMLStructReaderException extends Exception {}
+class XMLStructReaderException extends RuntimeException {}
 
 /**
  * Base interpreter factory for the default namespace.
