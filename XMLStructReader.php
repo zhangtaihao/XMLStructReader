@@ -450,6 +450,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected function setUpInterpreters() {
     // Add default interpreters.
     $this->registerElementInterpreterFactory(new XMLStructReader_DefaultElementFactory());
+    $this->registerAttributeInterpreterFactory(new XMLStructReader_DefaultWildcardAttributeFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_DefaultAttributeFactory());
     $this->registerAttributeInterpreterFactory(new XMLStructReader_StructAttributeFactory());
   }
@@ -864,7 +865,7 @@ interface XMLStructReader_AttributeInterpreterFactory extends XMLStructReader_In
    * Returns the name of the attribute to interpret.
    *
    * @return string
-   *   Name of the XML attribute, or '*' if all elements not interpreted by
+   *   Name of the XML attribute, or '*' if all attributes not interpreted by
    *   other interpreters are processed.
    */
   public function getAttributeName();
@@ -1187,6 +1188,66 @@ class XMLStructReader_DefaultRootContainer extends XMLStructReader_DefaultElemen
 }
 
 /**
+ * Factory for the empty attribute interpreter for a default reader.
+ */
+class XMLStructReader_DefaultWildcardAttributeFactory implements XMLStructReader_AttributeInterpreterFactory {
+  /**
+   * Returns the namespace to interpret in.
+   *
+   * @return string|null
+   *   URI of the namespace, NULL if no namespace, or '*' if all other
+   *   unprocessed namespaces.
+   */
+  public function getNamespace() {
+    return '*';
+  }
+
+  /**
+   * Returns the name of the attribute to interpret.
+   *
+   * @return string
+   *   Name of the XML attribute, or '*' if all attributes not interpreted by
+   *   other interpreters are processed.
+   */
+  public function getAttributeName() {
+    return '*';
+  }
+
+  /**
+   * Creates an attribute interpreter.
+   *
+   * @param string $name
+   *   Attribute name.
+   * @param XMLStructReaderContext $context
+   *   Reader context.
+   * @param XMLStructReader $reader
+   *   Associated reader.
+   * @param XMLStructReader_ElementInterpreter $element
+   *   Containing element interpreter.
+   * @return XMLStructReader_AttributeInterpreter
+   *   Attribute interpreter object.
+   */
+  public function createAttributeInterpreter($name, $context, $reader, $element) {
+    return new XMLStructReader_EmptyAttribute();
+  }
+}
+
+/**
+ * Attribute interpreter that does nothing.
+ */
+class XMLStructReader_EmptyAttribute implements XMLStructReader_AttributeInterpreter {
+  /**
+   * Handles the element attribute.
+   *
+   * @param string $value
+   *   Attribute value.
+   */
+  public function processAttribute($value) {
+    // Do nothing.
+  }
+}
+
+/**
  * Default attribute interpreter factory.
  */
 class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_AttributeInterpreterFactory {
@@ -1206,7 +1267,7 @@ class XMLStructReader_DefaultAttributeFactory implements XMLStructReader_Attribu
    * Returns the name of the attribute to interpret.
    *
    * @return string
-   *   Name of the XML attribute, or '*' if all elements not interpreted by
+   *   Name of the XML attribute, or '*' if all attributes not interpreted by
    *   other interpreters are processed.
    */
   public function getAttributeName() {
