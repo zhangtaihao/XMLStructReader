@@ -12,6 +12,25 @@
  */
 
 /**
+ * Whether to trim ends of element text chunks (of whitespace).
+ *
+ * Possible values:
+ * - TRUE (default)
+ * - FALSE
+ */
+define('XML_STRUCT_READER_OPTION_TEXT_TRIM', 'textTrim');
+
+/**
+ * Whether to skip empty chunks of text within elements. The text is measured
+ * in its trimmed form.
+ *
+ * Possible values:
+ * - TRUE (default)
+ * - FALSE
+ */
+define('XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY', 'textSkipEmpty');
+
+/**
  * Default base path for included file names.
  *
  * Possible values:
@@ -23,7 +42,7 @@ define('XML_STRUCT_READER_OPTION_INCLUDE_PATH', 'includePath');
  * Factory class to create reader for included files.
  *
  * Possible values:
- * - Any valid findable class name. Default: XMLStructReaderFactory
+ * - Any valid findable class name. Default: DefaultXMLStructReaderFactory
  */
 define('XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY', 'includeReaderFactory');
 
@@ -423,6 +442,8 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   protected function getDefaultOptions() {
     return array(
+      XML_STRUCT_READER_OPTION_TEXT_TRIM => TRUE,
+      XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => TRUE,
       XML_STRUCT_READER_OPTION_INCLUDE_PATH => NULL,
       XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY => 'DefaultXMLStructReaderFactory',
     ) + parent::getDefaultOptions();
@@ -1094,7 +1115,22 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Raw character data from XML parser.
    */
   public function addCharacterData($data) {
-    // TODO Switch data addition behavior.
+    $optionTextTrim = $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM);
+    $optionTextSkipEmpty = $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY);
+    // Trim text.
+    $trimmedData = '';
+    if (!empty($optionTextTrim) || !empty($optionTextSkipEmpty)) {
+      $trimmedData = trim($data);
+    }
+    // Skip empty text.
+    if (!empty($optionTextSkipEmpty) && strlen($trimmedData) == 0) {
+      return;
+    }
+    // Use trimmed text.
+    if (!empty($optionTextTrim)) {
+      $data = $trimmedData;
+    }
+    // Append text to value.
     $this->value .= $data;
   }
 
