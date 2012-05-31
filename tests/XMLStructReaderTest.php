@@ -23,10 +23,12 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
   }
 
   /**
-   * @dataProvider fileProvider
+   * @dataProvider delegateProvider
    */
-  public function testReadBasic($file) {
-    // TODO
+  public function testReadBasic($delegate) {
+    $reader = new DefaultXMLStructReader($delegate);
+    $data = $reader->read();
+    // TODO Assert data correctness.
   }
 
   /**
