@@ -184,6 +184,20 @@ abstract class XMLStructReader {
   }
 
   /**
+   * Gets all options for the reader.
+   *
+   * @return array
+   *   An array of option values.
+   */
+  public function getOptions() {
+    $options = array();
+    foreach (array_keys($this->options) as $key) {
+      $options[$key] = $this->getOption($key);
+    }
+    return $options;
+  }
+
+  /**
    * Sets a number of option on the reader.
    *
    * @param array $options

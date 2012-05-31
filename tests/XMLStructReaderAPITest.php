@@ -39,6 +39,16 @@ class XMLStructReaderAPITest extends XMLStructReaderTestCase {
   }
 
   /**
+   * @depends testGetOption
+   * @dataProvider delegateProvider
+   */
+  public function testGetOptions($delegate) {
+    $reader = new TestXMLStructReader($delegate);
+    $options = $reader->getOptions();
+    $this->assertTrue(!empty($options['test1']), 'The entire option values set can be retrieved.');
+  }
+
+  /**
    * @depends testSetOption
    * @dataProvider delegateProvider
    */
