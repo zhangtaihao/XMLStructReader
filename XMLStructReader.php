@@ -412,7 +412,7 @@ class DefaultXMLStructReader extends XMLStructReader {
 
   /**
    * Root element container.
-   * @var XMLStructReader_ElementInterpreter
+   * @var XMLStructReader_DefaultRootContainer
    */
   protected $rootContainer;
 
