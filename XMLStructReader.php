@@ -927,7 +927,7 @@ interface XMLStructReader_ElementInterpreter {
   /**
    * Gets the element data.
    *
-   * @return array
+   * @return mixed
    *   Element data.
    */
   public function getData();
@@ -1065,9 +1065,13 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // Remove list element context from parent (as one-use).
+    // Remove list element context for single use.
     if (isset($context['listElement'])) {
       unset($context['listElement']);
+    }
+    // Remove text key context for single use.
+    if (isset($context['textKey'])) {
+      unset($context['textKey']);
     }
   }
 
@@ -1129,43 +1133,57 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    * Handles the element (complete with data) as it ends.
    */
   public function processElement() {
-    if (isset($this->parent)) {
-      $this->parent->addData($this->name, $this->getData());
+    if (isset($this->parent) && NULL !== $data = $this->getData()) {
+      $this->parent->addData($this->name, $data);
     }
   }
 
   /**
    * Gets the element data.
    *
-   * @return array
+   * @return mixed
    *   Element data.
    */
   public function getData() {
-    $data = array();
-    $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
-    // Use attributes as data.
+    $dataValues = array();
+    // Collect attributes as data.
     foreach ($this->attributes as $key => $value) {
-      // Add attribute value as list item.
-      if ($listElement == '*' || $listElement === $key) {
-        $data[] = $value;
-      }
-      // Add attribute value as struct value.
-      else {
-        $data[$key] = $value;
-      }
+      $dataValues[] = array(
+        'key' => $key,
+        'data' => $value,
+      );
     }
-    // Merge element data.
-    foreach ($this->data as $item) {
-      // Add attribute value as list item.
-      if ($listElement == '*' || $listElement === $item['key']) {
-        $data[] = $item['data'];
-      }
-      // Add attribute value as struct value.
-      else {
-        $data[$item['key']] = $item['data'];
-      }
+    // Collect element data.
+    $dataValues = array_merge($dataValues, $this->data);
+    // Collect keyed element value.
+    if (isset($this->context['textKey']) && isset($this->value)) {
+      $dataValues[] = array(
+        'key' => $this->context['textKey'],
+        'data' => $this->value,
+      );
     }
 
+    // Build data to return.
+    $data = NULL;
+    if (!empty($dataValues)) {
+      // Use collected values as data.
+      $data = array();
+      $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
+      foreach ($dataValues as $item) {
+        // Add as list item.
+        if ($listElement == '*' || $listElement === $item['key']) {
+          $data[] = $item['data'];
+        }
+        // Add as struct value.
+        else {
+          $data[$item['key']] = $item['data'];
+        }
+      }
+    }
+    elseif ($this->value !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY)) {
+      // Use element value as data.
+      $data = $this->value;
+    }
     return $data;
   }
 }
