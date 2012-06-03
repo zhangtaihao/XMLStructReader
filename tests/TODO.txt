@@ -1,0 +1,32 @@
+﻿Tests:
+- reading
+  - null namespace
+  - unrecognized namespace
+  - namespace lookup
+  - context stack
+  - x:attribute interpreter
+    - special PHP values
+    - added to context
+  - x:listElement
+  - character data
+    - attribute/element priority
+    - x:textKey (and priority)
+    - trim
+      - trim only element boundary
+    - skip empty
+      - skip empty even if not set to trim
+- include
+  - read data
+  - file
+  - path
+  - defined constants
+  - included context
+- interpreters
+  - additional namespace handling
+  - element interpreter
+    - addData()
+    - addAttribute()
+    - addCharacterData()
+    - processElement()
+  - attribute interpreter
+    - processAttribute()
