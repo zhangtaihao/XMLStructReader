@@ -24,15 +24,6 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
 
   /**
    * @dataProvider delegateProvider
-   */
-  public function testReadBasic($delegate) {
-    $reader = new DefaultXMLStructReader($delegate);
-    $data = $reader->read();
-    // TODO Assert data correctness.
-  }
-
-  /**
-   * @dataProvider delegateProvider
    * @expectedException XMLStructReaderException
    * @expectedExceptionMessage No matching element interpreter is found.
    */
@@ -49,6 +40,30 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
   public function testReadNullAttributeInterpreter($delegate) {
     $reader = new TestNullAttributeXMLStructReader($delegate);
     $reader->read();
+  }
+
+  /**
+   * @dataProvider readDataProvider
+   */
+  public function testReadData($xml, $expectedValue) {
+    $delegate = $this->createXMLDelegate($xml);
+    $reader = new DefaultXMLStructReader($delegate);
+    $data = $reader->read();
+    $this->assertSame($data, $expectedValue);
+  }
+
+  public function readDataProvider() {
+    return array(
+      // Check simple XML.
+      array(
+        '<element>value</element>',
+        array('element' => 'value'),
+      ),
+      array(
+        '<root><element>value</element></root>',
+        array('root' => array('element' => 'value')),
+      ),
+    );
   }
 }
 
