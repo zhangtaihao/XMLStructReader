@@ -1029,7 +1029,7 @@ class XMLStructReader_DefaultElementFactory implements XMLStructReader_ElementIn
 class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpreter {
   /**
    * Element name.
-   * @var $name.
+   * @var $name
    */
   protected $name;
 
