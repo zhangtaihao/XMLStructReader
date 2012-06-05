@@ -1,15 +1,14 @@
 <?php
 
 require_once 'XMLStructReaderTest.inc.php';
-require_once 'XMLStructReaderAPI.inc.php';
 
 /**
  * Reader factory test.
  */
 class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
   public function testCreateFactory() {
-    $factory = new TestXMLStructReaderFactory();
-    $this->assertTrue(is_object($factory), 'Basic factory can be created.');
+    $factory = $this->getMockReaderFactory();
+    $this->assertInstanceOf('XMLStructReaderFactory', $factory);
   }
 
   /**
@@ -17,6 +16,7 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @expectedExceptionMessage Owner is not a valid object.
    */
   public function testCreateFactoryInvalidOwner() {
+    /** @noinspection PhpParamsInspection */
     new DefaultXMLStructReaderFactory('invalid value');
   }
 
@@ -25,6 +25,7 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @expectedExceptionMessage Context is not a valid object.
    */
   public function testCreateFactoryInvalidContext() {
+    /** @noinspection PhpParamsInspection */
     new DefaultXMLStructReaderFactory(NULL, 'invalid value');
   }
 
@@ -33,9 +34,9 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @dataProvider fileProvider
    */
   public function testCreateReader($file) {
-    $factory = new TestXMLStructReaderFactory();
+    $factory = $this->getMockReaderFactory();
     $reader = $factory->createReader($file);
-    $this->assertTrue(is_object($reader), 'Basic reader can be created from factory.');
+    $this->assertInstanceOf('XMLStructReader', $reader, 'Basic reader can be created from factory.');
   }
 
   /**
@@ -43,9 +44,9 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @dataProvider pathProvider
    */
   public function testCreateReaderFromPath($path) {
-    $factory = new TestXMLStructReaderFactory();
+    $factory = $this->getMockReaderFactory();
     $reader = $factory->createReader($path);
-    $this->assertTrue(is_object($reader), 'Reader can be created from a path.');
+    $this->assertInstanceOf('XMLStructReader', $reader, 'Reader can be created from a path.');
   }
 
   /**
@@ -53,10 +54,11 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @dataProvider fileProvider
    */
   public function testCreateFactoryWithOwner($file) {
-    $factory = new TestXMLStructReaderFactory();
+    $factory = $this->getMockReaderFactory();
     $reader = $factory->createReader($file);
-    $subFactory = new TestXMLStructReaderFactory($reader);
-    $this->assertTrue(is_object($subFactory) && is_object($subFactory->owner), 'Basic factory can be created with an owner.');
+    $subFactory = $this->getMockReaderFactory($reader);
+    $this->assertInstanceOf('XMLStructReaderFactory', $subFactory);
+    $this->assertInstanceOf('XMLStructReader', $subFactory->getOwner(), 'Basic factory can be created with an owner.');
   }
 
   /**
@@ -64,10 +66,11 @@ class XMLStructReaderFactoryAPITest extends XMLStructReaderTestCase {
    * @dataProvider fileProvider
    */
   public function testCreateFactoryWithContext($file) {
-    $factory = new TestXMLStructReaderFactory();
+    $factory = $this->getMockReaderFactory();
     $reader = $factory->createReader($file);
-    $subFactory = new TestXMLStructReaderFactory($reader, $reader->getContext());
-    $this->assertTrue(is_object($subFactory) && is_object($subFactory->owner), 'Basic factory can be created with a context.');
+    $subFactory = $this->getMockReaderFactory($reader, $reader->getContext());
+    $this->assertInstanceOf('XMLStructReaderFactory', $subFactory);
+    $this->assertInstanceOf('XMLStructReaderContext', $subFactory->getContext(), 'Basic factory can be created with a context.');
   }
 
   protected function getXMLPath() {

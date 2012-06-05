@@ -6,3 +6,8 @@ array.
 
 The library uses the built-in XML Parser for XML parsing tasks. The minimum
 requirements are PHP 5.1.0 and the SPL extension (enabled by default).
+
+
+ Testing
+------------
+This library is tested using PHPUnit. Note that PHP 5.3 is required for tests.

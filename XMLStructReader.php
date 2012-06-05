@@ -758,6 +758,26 @@ abstract class XMLStructReaderFactory {
   }
 
   /**
+   * Gets the factory owner.
+   *
+   * @return XMLStructReader
+   *   Reader that owns this factory.
+   */
+  public function getOwner() {
+    return $this->owner;
+  }
+
+  /**
+   * Gets the factory context.
+   *
+   * @return XMLStructReaderContext
+   *   Context object.
+   */
+  public function getContext() {
+    return $this->context;
+  }
+
+  /**
    * Creates a reader with options. See a specific reader implementation for
    * supported options to initialize with.
    *
