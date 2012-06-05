@@ -1,8 +1,5 @@
 ﻿Tests:
 - reading
-  - null namespace
-  - unrecognized namespace
-  - namespace lookup
   - context stack
   - x:attribute interpreter
     - special PHP values
