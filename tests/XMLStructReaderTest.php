@@ -9,7 +9,7 @@ require_once 'XMLStructReader.php';
 class XMLStructReaderTest extends XMLStructReaderTestCase {
   public function testCreateFactory() {
     $factory = new DefaultXMLStructReaderFactory();
-    $this->assertTrue(is_object($factory), 'Default factory can be created.');
+    $this->assertInstanceOf('DefaultXMLStructReaderFactory', $factory, 'Default factory can be created.');
   }
 
   /**
@@ -19,7 +19,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
   public function testCreateReader($file) {
     $factory = new DefaultXMLStructReaderFactory();
     $reader = $factory->createReader($file);
-    $this->assertTrue(is_object($reader), 'Default reader can be created');
+    $this->assertInstanceOf('DefaultXMLStructReader', $reader, 'Default reader can be created');
   }
 
   /**
@@ -28,7 +28,14 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @expectedExceptionMessage No matching element interpreter is found.
    */
   public function testReadNullInterpreter($delegate) {
-    $reader = new TestNullXMLStructReader($delegate);
+    /** @var $reader PHPUnit_Framework_MockObject_MockObject */
+    $reader = $this->getMockBuilder('DefaultXMLStructReader')
+      ->disableOriginalConstructor()
+      ->setMethods(array('setUpInterpreters'))
+      ->getMock();
+    $reader->expects($this->once())->method('setUpInterpreters');
+    /** @var $reader XMLStructReader */
+    $reader->__construct($delegate);
     $reader->read();
   }
 
@@ -38,7 +45,44 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @expectedExceptionMessage No matching attribute interpreter is found.
    */
   public function testReadNullAttributeInterpreter($delegate) {
-    $reader = new TestNullAttributeXMLStructReader($delegate);
+    $testCase = $this;
+
+    // Mock element factory.
+    /** @var $reader PHPUnit_Framework_MockObject_MockObject */
+    $factory = $this->getMock('XMLStructReader_ElementInterpreterFactory');
+    $factory->expects($this->any())
+      ->method('getNamespace')
+      ->will($this->returnValue('*'));
+    $factory->expects($this->any())
+      ->method('getElementName')
+      ->will($this->returnValue('*'));
+    $factory->expects($this->any())
+      ->method('createElementInterpreter')
+      ->will($this->returnCallback(
+        function () use (&$testCase) {
+          /** @var $testCase XMLStructReaderTest */
+          return $testCase->getMock('XMLStructReader_ElementInterpreter');
+        }));
+
+    // Mock reader.
+    /** @var $reader PHPUnit_Framework_MockObject_MockObject */
+    $reader = $this->getMockBuilder('DefaultXMLStructReader')
+      ->disableOriginalConstructor()
+      ->setMethods(array('setUpInterpreters'))
+      ->getMock();
+    $method = new ReflectionMethod($reader, 'registerElementInterpreterFactory');
+    $method->setAccessible(TRUE);
+    $reader->expects($this->once())
+      ->method('setUpInterpreters')
+      ->will($this->returnCallback(
+        function () use (&$reader, &$method, &$factory) {
+          /** @var $method ReflectionMethod */
+          $method->invoke($reader, $factory);
+        }));
+
+    // Test reader.
+    /** @var $reader XMLStructReader */
+    $reader->__construct($delegate);
     $reader->read();
   }
 
@@ -65,50 +109,4 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
       ),
     );
   }
-}
-
-/**
- * Test reader without interpreters.
- */
-class TestNullXMLStructReader extends DefaultXMLStructReader {
-  protected function setUpInterpreters() {
-    // Skip interpreter setup.
-  }
-}
-
-/**
- * Test reader without attribute interpreters.
- */
-class TestNullAttributeXMLStructReader extends DefaultXMLStructReader {
-  protected function setUpInterpreters() {
-    // @codeCoverageIgnoreStart
-    $this->registerElementInterpreterFactory(new TestNullElementInterpreterFactory());
-    // @codeCoverageIgnoreEnd
-  }
-}
-
-/**
- * Element interpreter that does nothing.
- */
-class TestNullElementInterpreterFactory implements XMLStructReader_ElementInterpreterFactory {
-  public function getNamespace() {
-    return '*';
-  }
-  public function getElementName() {
-    return '*';
-  }
-  public function createElementInterpreter($name, $context, $reader, $parent = NULL) {
-    return new TestNullElementInterpreter();
-  }
-}
-
-/**
- * Element interpreter that does nothing.
- */
-class TestNullElementInterpreter implements XMLStructReader_ElementInterpreter {
-  public function addData($key, $data) {}
-  public function addAttribute($name, $value) {}
-  public function addCharacterData($data) {}
-  public function processElement() {}
-  public function getData() {}
 }

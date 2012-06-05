@@ -11,7 +11,6 @@ class XMLStructReaderAPITest extends XMLStructReaderTestCase {
    */
   public function testObject($delegate) {
     $reader = $this->getMockReader($delegate);
-    $reader->__construct($delegate);
     $this->assertInstanceOf('XMLStructReader', $reader, 'Reader can be constructed.');
     // Simulate destructor.
     $reader->__destruct();

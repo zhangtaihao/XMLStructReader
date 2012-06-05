@@ -10,4 +10,4 @@ requirements are PHP 5.1.0 and the SPL extension (enabled by default).
 
  Testing
 ------------
-This library is tested using PHPUnit. Note that PHP 5.3 is required for tests.
+This library is tested using PHPUnit. Note that PHP 5.3.2 is required for tests.
