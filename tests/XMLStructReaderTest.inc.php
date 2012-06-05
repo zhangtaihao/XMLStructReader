@@ -51,7 +51,7 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
 
   /**
    * @param $delegate XMLStructReader_StreamDelegate
-   * @return \XMLStructReader
+   * @return XMLStructReader
    */
   public function getMockReader($delegate) {
     // Create a mock object with custom initialization mechanisms.
