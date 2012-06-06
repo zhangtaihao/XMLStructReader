@@ -102,6 +102,10 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
     return $factory;
   }
 
+  public function returnMock($mockedClass, array $arguments = array(), array $methodStubs = array()) {
+    return new XMLStructReaderMockStub($this, $mockedClass, $arguments, $methodStubs);
+  }
+
   public function returnMockException($mockedClass, array $arguments, array $methods, $message) {
     return new XMLStructReaderMockExceptionStub($this, $mockedClass, $arguments, $methods, $message);
   }
@@ -110,14 +114,13 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
 /**
  * @codeCoverageIgnore
  */
-class XMLStructReaderMockExceptionStub implements PHPUnit_Framework_MockObject_Stub {
+class XMLStructReaderMockStub implements PHPUnit_Framework_MockObject_Stub {
   /** @var PHPUnit_Framework_TestCase */
   protected $testCase;
 
   protected $mockedClass;
   protected $arguments;
-  protected $methods;
-  protected $message;
+  protected $methodStubs;
 
   /**
    * Creates the stub with class to mock and methods to throw exception message.
@@ -125,35 +128,42 @@ class XMLStructReaderMockExceptionStub implements PHPUnit_Framework_MockObject_S
    * @param PHPUnit_Framework_TestCase $testCase
    * @param string $mockedClass
    * @param array $arguments
-   * @param array $methods
-   * @param string $message
+   * @param PHPUnit_Framework_MockObject_Stub[] $methodStubs
    */
-  public function __construct($testCase, $mockedClass, array $arguments, array $methods, $message) {
+  public function __construct($testCase, $mockedClass, array $arguments = array(), array $methodStubs = array()) {
     $this->testCase = $testCase;
     $this->mockedClass = $mockedClass;
     $this->arguments = $arguments;
-    $this->methods = $methods;
-    $this->message = $message;
+    $this->methodStubs = $methodStubs;
+  }
+
+  /**
+   * @return PHPUnit_Framework_MockObject_Stub[]
+   */
+  protected function getMethodStubs() {
+    return $this->methodStubs;
   }
 
   protected function createMock() {
     /** @var $mock PHPUnit_Framework_MockObject_MockObject */
     $mock = NULL;
+    $methodStubs = $this->getMethodStubs();
+    $methods = array_keys($methodStubs);
     $reflector = new ReflectionClass($this->mockedClass);
     if ($reflector->isInterface()) {
       $mock = $this->testCase->getMock($this->mockedClass, array(), $this->arguments);
     }
     elseif ($reflector->isAbstract()) {
-      $mock = $this->testCase->getMockForAbstractClass($this->mockedClass, $this->arguments, '', TRUE, TRUE, TRUE, $this->methods);
+      $mock = $this->testCase->getMockForAbstractClass($this->mockedClass, $this->arguments, '', TRUE, TRUE, TRUE, $methods);
     }
     else {
-      $mock = $this->testCase->getMock($this->mockedClass, $this->methods, $this->arguments);
+      $mock = $this->testCase->getMock($this->mockedClass, $methods, $this->arguments);
     }
 
-    foreach ($this->methods as $method) {
+    foreach ($methodStubs as $method => $stub) {
       $mock->expects($this->testCase->any())
         ->method($method)
-        ->will($this->testCase->throwException(new XMLStructReaderException($this->message)));
+        ->will($stub);
     }
 
     return $mock;
@@ -170,6 +180,49 @@ class XMLStructReaderMockExceptionStub implements PHPUnit_Framework_MockObject_S
    */
   public function invoke(PHPUnit_Framework_MockObject_Invocation $invocation) {
     return $this->createMock();
+  }
+
+  /**
+   * Returns a string representation of the object.
+   *
+   * @return string
+   */
+  public function toString() {
+    return sprintf('return a mock instance of %s for: %s', $this->mockedClass, implode(', ', array_keys($this->methodStubs)));
+  }
+}
+
+/**
+ * @codeCoverageIgnore
+ */
+class XMLStructReaderMockExceptionStub extends XMLStructReaderMockStub {
+  protected $message;
+  protected $methods;
+
+  /**
+   * Creates the stub with class to mock and methods to throw exception message.
+   *
+   * @param PHPUnit_Framework_TestCase $testCase
+   * @param string $mockedClass
+   * @param array $arguments
+   * @param array $methods
+   * @param string $message
+   */
+  public function __construct($testCase, $mockedClass, array $arguments, array $methods, $message) {
+    parent::__construct($testCase, $mockedClass, $arguments);
+    $this->message = $message;
+    $this->methods = $methods;
+  }
+
+  /**
+   * @return PHPUnit_Framework_MockObject_Stub[]
+   */
+  public function getMethodStubs() {
+    $methodStubs = array();
+    foreach ($this->methods as $method) {
+      $methodStubs[$method] = $this->testCase->throwException(new XMLStructReaderException($this->message));
+    }
+    return $methodStubs;
   }
 
   /**
