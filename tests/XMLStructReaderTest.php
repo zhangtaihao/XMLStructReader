@@ -82,6 +82,21 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     $this->createRegistryTest('<unmatched xmlns="urn:x"/>')->read();
   }
 
+  public function createRegistryTest($xml) {
+    $testCase = $this;
+    $elementMockException = function ($message) use (&$testCase) {
+      /** @var $testCase XMLStructReaderTest */
+      return $testCase->returnMockException('XMLStructReader_ElementInterpreter', array(), array('processElement'), $message);
+    };
+
+    $factories = array();
+    $factories[] = $this->createElementInterpreterFactory(NULL, 'element', $elementMockException('Exact match.'));
+    $factories[] = $this->createElementInterpreterFactory('*', 'element', $elementMockException('Wildcard namespace.'));
+    $factories[] = $this->createElementInterpreterFactory(NULL, '*', $elementMockException('Wildcard element.'));
+    $factories[] = $this->createElementInterpreterFactory('*', '*', $elementMockException('Wildcard match.'));
+    return $this->createElementReader($this->createXMLDelegate($xml), $factories);
+  }
+
   /**
    * @dataProvider readDataProvider
    */
@@ -106,19 +121,52 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     );
   }
 
-  public function createRegistryTest($xml) {
-    $factories = array();
-    $factories[] = $this->createElementInterpreterFactory(NULL, 'element', 'Exact match.');
-    $factories[] = $this->createElementInterpreterFactory('*', 'element', 'Wildcard namespace.');
-    $factories[] = $this->createElementInterpreterFactory(NULL, '*', 'Wildcard element.');
-    $factories[] = $this->createElementInterpreterFactory('*', '*', 'Wildcard match.');
-    return $this->createElementReader($this->createXMLDelegate($xml), $factories);
+  /**
+   * @param XMLStructReader_StreamDelegate $delegate
+   * @param XMLStructReader_InterpreterFactory[] $factories
+   * @return XMLStructReader
+   */
+  public function createElementReader($delegate, $factories) {
+    /** @var $reader PHPUnit_Framework_MockObject_MockObject */
+    $reader = $this->getMockBuilder('DefaultXMLStructReader')
+      ->disableOriginalConstructor()
+      ->setMethods(array('setUpInterpreters'))
+      ->getMock();
+
+    $elementMethod = new ReflectionMethod($reader, 'registerElementInterpreterFactory');
+    $elementMethod->setAccessible(TRUE);
+    $attributeMethod = new ReflectionMethod($reader, 'registerAttributeInterpreterFactory');
+    $attributeMethod->setAccessible(TRUE);
+
+    $reader->expects($this->once())
+      ->method('setUpInterpreters')
+      ->will($this->returnCallback(
+      function () use (&$reader, &$elementMethod, &$attributeMethod, &$factories) {
+        /** @var $elementMethod ReflectionMethod */
+        /** @var $attributeMethod ReflectionMethod */
+        foreach ($factories as $factory) {
+          if ($factory instanceof XMLStructReader_ElementInterpreterFactory) {
+            $elementMethod->invoke($reader, $factory);
+          }
+          elseif ($factory instanceof XMLStructReader_AttributeInterpreterFactory) {
+            $attributeMethod->invoke($reader, $factory);
+          }
+        }
+      }));
+
+    // Test reader.
+    /** @var $reader XMLStructReader */
+    $reader->__construct($delegate);
+    return $reader;
   }
 
   /**
+   * @param $namespace
+   * @param $name
+   * @param PHPUnit_Framework_MockObject_Stub $createElementStub
    * @return XMLStructReader_ElementInterpreterFactory
    */
-  public function createElementInterpreterFactory($namespace, $name, $exceptionMessage = NULL) {
+  public function createElementInterpreterFactory($namespace, $name, $createElementStub = NULL) {
     $factory = $this->getMock('XMLStructReader_ElementInterpreterFactory');
 
     $factory->expects($this->any())
@@ -129,51 +177,12 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
       ->method('getElementName')
       ->will($this->returnValue($name));
 
-    $testCase = $this;
-    $factory->expects($this->any())
-      ->method('createElementInterpreter')
-      ->will($this->returnCallback(
-        function () use (&$testCase, $exceptionMessage) {
-          /** @var $testCase XMLStructReaderTest */
-          /** @var $mock PHPUnit_Framework_MockObject_MockObject */
-          $mock = $testCase->getMock('XMLStructReader_ElementInterpreter');
-          if (isset($exceptionMessage)) {
-            $mock->expects($testCase->any())
-              ->method('processElement')
-              ->will($testCase->throwException(new XMLStructReaderException($exceptionMessage)));
-          }
-          return $mock;
-        }));
+    if (isset($createElementStub)) {
+      $factory->expects($this->any())
+        ->method('createElementInterpreter')
+        ->will($createElementStub);
+    }
 
     return $factory;
-  }
-
-  /**
-   * @param XMLStructReader_StreamDelegate $delegate
-   * @param XMLStructReader_ElementInterpreterFactory[] $factories
-   * @return XMLStructReader
-   */
-  public function createElementReader($delegate, $factories) {
-    /** @var $reader PHPUnit_Framework_MockObject_MockObject */
-    $reader = $this->getMockBuilder('DefaultXMLStructReader')
-      ->disableOriginalConstructor()
-      ->setMethods(array('setUpInterpreters'))
-      ->getMock();
-    $method = new ReflectionMethod($reader, 'registerElementInterpreterFactory');
-    $method->setAccessible(TRUE);
-    $reader->expects($this->once())
-      ->method('setUpInterpreters')
-      ->will($this->returnCallback(
-      function () use (&$reader, &$method, &$factories) {
-        /** @var $method ReflectionMethod */
-        foreach ($factories as $factory) {
-          $method->invoke($reader, $factory);
-        }
-      }));
-
-    // Test reader.
-    /** @var $reader XMLStructReader */
-    $reader->__construct($delegate);
-    return $reader;
   }
 }
