@@ -140,19 +140,14 @@ class XMLStructReaderMockExceptionStub implements PHPUnit_Framework_MockObject_S
     /** @var $mock PHPUnit_Framework_MockObject_MockObject */
     $mock = NULL;
     $reflector = new ReflectionClass($this->mockedClass);
-    if ($reflector->isAbstract() && !$reflector->isInterface()) {
+    if ($reflector->isInterface()) {
+      $mock = $this->testCase->getMock($this->mockedClass, array(), $this->arguments);
+    }
+    elseif ($reflector->isAbstract()) {
       $mock = $this->testCase->getMockForAbstractClass($this->mockedClass, $this->arguments, '', TRUE, TRUE, TRUE, $this->methods);
     }
     else {
-      $methods = $this->methods;
-      if ($reflector->isInterface()) {
-        foreach ($reflector->getMethods() as $method) {
-          /** @var $method ReflectionMethod */
-          $methods[] = $method->getName();
-        }
-        $methods = array_unique($methods);
-      }
-      $mock = $this->testCase->getMock($this->mockedClass, $methods, $this->arguments);
+      $mock = $this->testCase->getMock($this->mockedClass, $this->methods, $this->arguments);
     }
 
     foreach ($this->methods as $method) {
