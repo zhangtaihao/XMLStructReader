@@ -97,6 +97,14 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     return $this->createElementReader($this->createXMLDelegate($xml), $factories);
   }
 
+  public function testStructAttribute() {
+    // TODO
+  }
+
+  public function testUnrecognizedAttribute() {
+    // TODO
+  }
+
   /**
    * @dataProvider readDataProvider
    */
