@@ -97,6 +97,14 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     return $this->createElementReader($this->createXMLDelegate($xml), $factories);
   }
 
+  /**
+   * @depends testReadNullInterpreter
+   * @depends testReadNullAttributeInterpreter
+   * @depends testRegistryExact
+   * @depends testRegistryWildcardNamespace
+   * @depends testRegistryWildcardElement
+   * @depends testRegistryWildcard
+   */
   public function testStructAttribute() {
     $testCase = $this;
     $capturedContext = NULL;
@@ -145,11 +153,8 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     $this->assertSame(FALSE, $capturedContext['test']);
   }
 
-  public function testUnrecognizedAttribute() {
-    // TODO
-  }
-
   /**
+   * @depends testStructAttribute
    * @dataProvider readDataProvider
    */
   public function testReadData($xml, $expectedValue) {
