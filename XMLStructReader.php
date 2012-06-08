@@ -53,7 +53,7 @@ abstract class XMLStructReader {
   /**
    * Namespace URI.
    */
-  const NS = 'http://xml.zth.me/XMLStructReader/';
+  const NS = 'http://xml.zth.me/XMLStructReader';
 
   /**
    * Namespace separator.
