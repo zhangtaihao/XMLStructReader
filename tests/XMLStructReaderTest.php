@@ -98,7 +98,51 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
   }
 
   public function testStructAttribute() {
-    // TODO
+    $testCase = $this;
+    $capturedContext = NULL;
+    $reader = NULL;
+    $processElement = function () use (&$testCase, &$capturedContext, &$reader) {
+      /** @var $testCase XMLStructReaderTest */
+      /** @var $reader XMLStructReader */
+      if ($context = $reader->getContext()) {
+        $capturedContext = clone $context;
+      }
+    };
+
+    // Mock element interpreter to capture context value.
+    $createElementInterpreter = $this->returnMock('XMLStructReader_DefaultElement', $this->returnArguments(), array(
+      'processElement' => $processElement,
+    ));
+    $elementFactory = $this->createElementInterpreterFactory('urn:test', 'element', $createElementInterpreter);
+
+    // Prepare for testing.
+    $attributeFactory = new XMLStructReader_StructAttributeFactory();
+    $factories = array($elementFactory, $attributeFactory);
+    /** @var $capturedContext XMLStructReaderContext */
+    $contextDelegate = function ($value) use (&$testCase) {
+      /** @var $testCase XMLStructReaderTest */
+      return $testCase->createXMLDelegate(sprintf('<element x:test="%s" xmlns="urn:test" xmlns:x="%s"/>', $value, XMLStructReader::NS));
+    };
+
+    // Test normal value.
+    $reader = $this->createElementReader($contextDelegate('context'), $factories);
+    $reader->read();
+    $this->assertSame('context', $capturedContext['test']);
+
+    // Test NULL value.
+    $reader = $this->createElementReader($contextDelegate('php:null'), $factories);
+    $reader->read();
+    $this->assertSame(NULL, $capturedContext['test']);
+
+    // Test TRUE value.
+    $reader = $this->createElementReader($contextDelegate('php:true'), $factories);
+    $reader->read();
+    $this->assertSame(TRUE, $capturedContext['test']);
+
+    // Test FALSE value.
+    $reader = $this->createElementReader($contextDelegate('php:false'), $factories);
+    $reader->read();
+    $this->assertSame(FALSE, $capturedContext['test']);
   }
 
   public function testUnrecognizedAttribute() {

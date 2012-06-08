@@ -38,15 +38,15 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
     return $data;
   }
 
-  protected function createXMLPath($xml) {
+  public function createXMLPath($xml) {
     return 'data://text/plain,' . $xml;
   }
 
-  protected function createXMLFile($xml) {
+  public function createXMLFile($xml) {
     return new SplFileObject($this->createXMLPath($xml));
   }
 
-  protected function createXMLDelegate($xml) {
+  public function createXMLDelegate($xml) {
     // @codeCoverageIgnoreStart
     return new XMLStructReader_StreamDelegate($this->createXMLFile($xml));
     // @codeCoverageIgnoreEnd
@@ -102,12 +102,35 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
     return $factory;
   }
 
-  public function returnMock($mockedClass, array $arguments = array(), array $methodStubs = array()) {
+  public function returnArguments() {
+    return new XMLStructReaderTestStub_ReturnArguments();
+  }
+
+  /**
+   * @param string $mockedClass
+   * @param array|PHPUnit_Framework_MockObject_Stub $arguments
+   * @param PHPUnit_Framework_MockObject_Stub[] $methodStubs
+   * @return XMLStructReaderMockStub
+   */
+  public function returnMock($mockedClass, $arguments = array(), array $methodStubs = array()) {
     return new XMLStructReaderMockStub($this, $mockedClass, $arguments, $methodStubs);
   }
 
   public function returnMockException($mockedClass, array $arguments, array $methods, $message) {
     return new XMLStructReaderMockExceptionStub($this, $mockedClass, $arguments, $methods, $message);
+  }
+}
+
+/**
+ * @codeCoverageIgnore
+ */
+class XMLStructReaderTestStub_ReturnArguments implements PHPUnit_Framework_MockObject_Stub {
+  public function invoke(PHPUnit_Framework_MockObject_Invocation $invocation) {
+    return $invocation->parameters;
+  }
+
+  public function toString() {
+    return 'return arguments';
   }
 }
 
@@ -127,10 +150,10 @@ class XMLStructReaderMockStub implements PHPUnit_Framework_MockObject_Stub {
    *
    * @param PHPUnit_Framework_TestCase $testCase
    * @param string $mockedClass
-   * @param array $arguments
+   * @param array|PHPUnit_Framework_MockObject_Stub $arguments
    * @param PHPUnit_Framework_MockObject_Stub[] $methodStubs
    */
-  public function __construct($testCase, $mockedClass, array $arguments = array(), array $methodStubs = array()) {
+  public function __construct($testCase, $mockedClass, $arguments = array(), array $methodStubs = array()) {
     $this->testCase = $testCase;
     $this->mockedClass = $mockedClass;
     $this->arguments = $arguments;
@@ -144,23 +167,29 @@ class XMLStructReaderMockStub implements PHPUnit_Framework_MockObject_Stub {
     return $this->methodStubs;
   }
 
-  protected function createMock() {
+  protected function createMock(array $arguments) {
     /** @var $mock PHPUnit_Framework_MockObject_MockObject */
     $mock = NULL;
     $methodStubs = $this->getMethodStubs();
     $methods = array_keys($methodStubs);
     $reflector = new ReflectionClass($this->mockedClass);
     if ($reflector->isInterface()) {
-      $mock = $this->testCase->getMock($this->mockedClass, array(), $this->arguments);
+      $mock = $this->testCase->getMock($this->mockedClass, array(), $arguments);
     }
     elseif ($reflector->isAbstract()) {
-      $mock = $this->testCase->getMockForAbstractClass($this->mockedClass, $this->arguments, '', TRUE, TRUE, TRUE, $methods);
+      $mock = $this->testCase->getMockForAbstractClass($this->mockedClass, $arguments, '', TRUE, TRUE, TRUE, $methods);
     }
     else {
-      $mock = $this->testCase->getMock($this->mockedClass, $methods, $this->arguments);
+      $mock = $this->testCase->getMock($this->mockedClass, $methods, $arguments);
     }
 
     foreach ($methodStubs as $method => $stub) {
+      if ($stub instanceof Closure) {
+        /** @var $stub Closure */
+        $stub = $this->testCase->returnCallback($stub);
+      }
+
+      /** @var $stub PHPUnit_Framework_MockObject_Stub */
       $mock->expects($this->testCase->any())
         ->method($method)
         ->will($stub);
@@ -179,7 +208,11 @@ class XMLStructReaderMockStub implements PHPUnit_Framework_MockObject_Stub {
    * @return mixed
    */
   public function invoke(PHPUnit_Framework_MockObject_Invocation $invocation) {
-    return $this->createMock();
+    $arguments = $this->arguments;
+    if (is_object($arguments) && $arguments instanceof PHPUnit_Framework_MockObject_Stub) {
+      $arguments = $arguments->invoke($invocation);
+    }
+    return $this->createMock($arguments);
   }
 
   /**

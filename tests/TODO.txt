@@ -1,9 +1,6 @@
 ﻿Tests:
 - reading
   - context stack
-  - x:attribute interpreter
-    - special PHP values
-    - added to context
   - x:listElement
   - character data
     - attribute/element priority
