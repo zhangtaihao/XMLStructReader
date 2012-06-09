@@ -1,7 +1,6 @@
 <?php
 
 require_once 'XMLStructReaderTest.inc.php';
-require_once 'XMLStructReader.php';
 
 /**
  * Stream delegate utility test.
