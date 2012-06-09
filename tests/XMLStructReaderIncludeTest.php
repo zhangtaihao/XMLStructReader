@@ -10,7 +10,9 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
    * @dataProvider includeDataProvider
    */
   public function testInclude($xml, $expectedValue) {
-    define('TEST_ROOT', __DIR__);
+    if (!defined('TEST_ROOT')) {
+      define('TEST_ROOT', __DIR__);
+    }
     $this->doTestDefaultRead($xml, $expectedValue);
   }
 
