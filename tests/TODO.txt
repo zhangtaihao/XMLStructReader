@@ -2,9 +2,6 @@
 - reading
   - context stack
   - x:listElement
-  - character data
-    - attribute/element priority
-    - x:textKey (and priority)
 - include
   - read data
   - file

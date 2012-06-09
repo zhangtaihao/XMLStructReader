@@ -236,6 +236,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @dataProvider readDataProvider
    */
   public function testReadData($xml, $expectedValue) {
+    $xml = str_replace('%ns%', XMLStructReader::NS, $xml);
     $delegate = $this->createXMLDelegate($xml);
     $reader = new DefaultXMLStructReader($delegate);
     $data = $reader->read();
@@ -252,6 +253,26 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
       array(
         '<root><element>value</element></root>',
         array('root' => array('element' => 'value')),
+      ),
+      // Test text values are skipped in mixed structures.
+      array(
+        '<root>text<element>value</element></root>',
+        array('root' => array('element' => 'value')),
+      ),
+      // Test attribute is used before element.
+      array(
+        '<root test="overwritten"><test>value</test></root>',
+        array('root' => array('test' => 'value')),
+      ),
+      // Test x:textKey adds text values in mixed structures.
+      array(
+        '<root x:textKey="text" xmlns:x="%ns%">text<test>value</test></root>',
+        array('root' => array('test' => 'value', 'text' => 'text')),
+      ),
+      // Test x:textKey overwrites existing keys.
+      array(
+        '<root x:textKey="test" test="overwritten" xmlns:x="%ns%">text<test>also overwritten</test></root>',
+        array('root' => array('test' => 'text')),
       ),
     );
   }
