@@ -1,7 +1,4 @@
 ﻿Tests:
-- reading
-  - context stack
-  - x:listElement
 - include
   - read data
   - file

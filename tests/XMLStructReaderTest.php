@@ -299,6 +299,50 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
           'test' => 'text',
         )),
       ),
+      // Test x:listElement.
+      array(
+        '<root x:listElement="item" xmlns:x="%ns%">
+          <item>0</item>
+          <item>1</item>
+        </root>',
+        array('root' => array(
+          0 => '0',
+          1 => '1',
+        )),
+      ),
+      array(
+        '<root x:listElement="item" xmlns:x="%ns%">
+          <item>0</item>
+          <extra>extra</extra>
+          <item>1</item>
+        </root>',
+        array('root' => array(
+          0 => '0',
+          'extra' => 'extra',
+          1 => '1',
+        )),
+      ),
+      array(
+        '<root x:listElement="invalid" xmlns:x="%ns%">
+          <item>0</item>
+          <extra>extra</extra>
+          <item>1</item>
+        </root>',
+        array('root' => array(
+          'item' => '1',
+          'extra' => 'extra',
+        )),
+      ),
+      array(
+        '<root x:listElement="*" xmlns:x="%ns%">
+          <a>0</a>
+          <b>1</b>
+        </root>',
+        array('root' => array(
+          0 => '0',
+          1 => '1',
+        )),
+      ),
     );
   }
 
