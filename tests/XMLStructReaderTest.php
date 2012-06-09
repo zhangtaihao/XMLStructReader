@@ -233,6 +233,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
 
   /**
    * @depends testStructAttribute
+   * @depends testBasicReaderOptions
    * @dataProvider readDataProvider
    */
   public function testReadData($xml, $expectedValue) {
