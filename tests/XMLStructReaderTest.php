@@ -153,6 +153,84 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
     $this->assertSame(FALSE, $capturedContext['test']);
   }
 
+  public function testBasicReaderOptions() {
+    $xml = '<root> test1 <element1/> <element2> value </element2> test2 </root>';
+
+    // Test default options.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element2' => 'value',
+      ),
+    ), $data);
+
+    // Test reading without skipping empty elements.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element1' => '',
+        'element2' => 'value',
+      ),
+    ), $data);
+
+    // Test reading without trimming values.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_TRIM => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element2' => ' value ',
+      ),
+    ), $data);
+
+    // Test reading without skipping empty elements or trimming values.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => FALSE,
+      XML_STRUCT_READER_OPTION_TEXT_TRIM => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element1' => '',
+        'element2' => ' value ',
+      ),
+    ), $data);
+
+    // Test mixed data structures.
+    $xml = '<root xmlns:x="%s" x:textKey="element2"> test1 <element1/> test2 </root>';
+    $xml = sprintf($xml, XMLStructReader::NS);
+
+    // Test tricky text values.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => FALSE,
+      XML_STRUCT_READER_OPTION_TEXT_TRIM => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element1' => '',
+        'element2' => ' test1  test2 ',
+      ),
+    ), $data);
+
+    // Test tricky text trimming.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element1' => '',
+        'element2' => 'test1test2',
+      ),
+    ), $data);
+  }
+
   /**
    * @depends testStructAttribute
    * @dataProvider readDataProvider
