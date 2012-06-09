@@ -1436,18 +1436,10 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
           $reader = $factory->createReader($fileObject, $this->reader->getOptions());
           // Cache read data.
           $this->data = $reader->read();
-          return $this->data;
         }
       }
-      // Fail by default.
-      $this->data = FALSE;
     }
-    // Return data.
-    elseif ($this->data !== FALSE) {
-      return $this->data;
-    }
-    // Fail otherwise.
-    return NULL;
+    return $this->data;
   }
 
   /**
