@@ -102,6 +102,18 @@ abstract class XMLStructReaderTestCase extends PHPUnit_Framework_TestCase {
     return $factory;
   }
 
+  public function doTestDefaultRead($xml, $expectedValue) {
+    $xml = $this->prepareXMLNamespace($xml);
+    $delegate = $this->createXMLDelegate($xml);
+    $reader = new DefaultXMLStructReader($delegate);
+    $data = $reader->read();
+    $this->assertSame($data, $expectedValue);
+  }
+
+  public function prepareXMLNamespace($xml) {
+    return str_replace('%ns%', XMLStructReader::NS, $xml);
+  }
+
   public function returnArguments() {
     return new XMLStructReaderTestStub_ReturnArguments();
   }

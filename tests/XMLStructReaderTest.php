@@ -236,11 +236,7 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @dataProvider readDataProvider
    */
   public function testReadData($xml, $expectedValue) {
-    $xml = str_replace('%ns%', XMLStructReader::NS, $xml);
-    $delegate = $this->createXMLDelegate($xml);
-    $reader = new DefaultXMLStructReader($delegate);
-    $data = $reader->read();
-    $this->assertSame($data, $expectedValue);
+    $this->doTestDefaultRead($xml, $expectedValue);
   }
 
   public function readDataProvider() {
@@ -341,6 +337,13 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
           0 => '0',
           1 => '1',
         )),
+      ),
+      // Test empty interpreters for completeness.
+      array(
+        '<element n:attribute="value" xmlns:n="urn:invalid">
+          value
+        </element>',
+        array('element' => 'value'),
       ),
     );
   }
