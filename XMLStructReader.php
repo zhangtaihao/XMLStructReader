@@ -1423,10 +1423,10 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
         $path = isset($path) ? rtrim($path, DIRECTORY_SEPARATOR) : NULL;
         // Look up full path.
         $fileObject = NULL;
-        if ($obj = $this->openFile($file)) {
+        if (isset($path) && $obj = $this->openFile($path . DIRECTORY_SEPARATOR . $file)) {
           $fileObject = $obj;
         }
-        elseif (isset($path) && $obj = $this->openFile($path . DIRECTORY_SEPARATOR . $file)) {
+        elseif ($obj = $this->openFile($file)) {
           $fileObject = $obj;
         }
         // Read file.
