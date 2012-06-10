@@ -349,6 +349,15 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
   }
 
   /**
+   * @expectedException XMLStructReaderException
+   * @expectedExceptionMessage Data has not been read.
+   */
+  public function testPrematureGetData() {
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate('<test/>'));
+    $reader->getData();
+  }
+
+  /**
    * @param XMLStructReader_StreamDelegate $delegate
    * @param XMLStructReader_InterpreterFactory[] $factories
    * @return XMLStructReader

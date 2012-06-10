@@ -377,8 +377,10 @@ abstract class XMLStructReader {
   /**
    * Returns the read data array.
    *
-   * @return array|null
-   *   Data array, or NULL if nothing was read (i.e. not even empty).
+   * @return array
+   *   Data array, or NULL if there was an error.
+   * @throws XMLStructReaderException
+   *   If data cannot be returned, e.g. data has not been read.
    */
   abstract public function getData();
 }
@@ -698,15 +700,17 @@ class DefaultXMLStructReader extends XMLStructReader {
   /**
    * Returns the read data array.
    *
-   * @return array|null
-   *   Data array, or NULL if nothing was read (i.e. not even empty).
+   * @return array
+   *   Data array, or NULL if there was an error.
+   * @throws XMLStructReaderException
+   *   If data cannot be returned, e.g. data has not been read.
    */
   public function getData() {
     if (isset($this->rootContainer)) {
       return $this->rootContainer->getData();
     }
-    // Return nothing by default.
-    return NULL;
+    // Fail by default.
+    throw new XMLStructReaderException('Data has not been read.');
   }
 }
 
