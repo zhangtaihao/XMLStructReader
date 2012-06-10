@@ -1,7 +1,0 @@
-﻿Tests:
-- include
-  - read data
-  - file
-  - path
-  - defined constants
-  - included context

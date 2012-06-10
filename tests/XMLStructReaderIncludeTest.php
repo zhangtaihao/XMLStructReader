@@ -57,6 +57,15 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
         </root>',
         NULL,
       ),
+      // Test included context.
+      array(
+        '<root xmlns:x="%ns%">
+          <x:include file="${TEST_ROOT}/include.xml" x:listElement="included"/>
+        </root>',
+        array('root' => array(
+          0 => 'value',
+        )),
+      ),
     );
   }
 
