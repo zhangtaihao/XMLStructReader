@@ -15,13 +15,11 @@ include:
 To parse XML files into a PHP array, create a reader factory and use it to
 create a reader given file path, stream resource, or an SplFileObject. Example:
 
-<?php
-// Create factory and read XML.
-$factory = new DefaultXMLStructReaderFactory();
-$data = $factory->createReader('data.xml')->read();
-// Output data array.
-print_r($data);
-?>
+    // Create factory and read XML.
+    $factory = new DefaultXMLStructReaderFactory();
+    $data = $factory->createReader('data.xml')->read();
+    // Output data array.
+    print_r($data);
 
 ## License
 
