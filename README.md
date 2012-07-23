@@ -24,6 +24,16 @@ $data = $factory->createReader('data.xml')->read();
 print_r($data);
 ```
 
+## Special XML markup
+
+The XML document can contain special annotations in the document tree to mark
+parts of the data structure for special behavior. All special elements are in
+the XMLStructReader namespace (`http://xml.zth.me/XMLStructReader/`).
+
+Assuming the namespace prefix is `x:`, the following markup are available:
+
+TODO
+
 ## License
 
 This library is licensed under the General Public License, version 3. For full
