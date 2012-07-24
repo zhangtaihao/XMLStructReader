@@ -83,14 +83,16 @@ parent element to specify a key for the text value (see
 [`textKey` attribute](#textkey-attribute) in Advanced usage).
 
 
-Special XML markup
-------------------
+Advanced usage
+--------------
+
+### Special XML markup
 
 The XML document can contain special annotations in the document tree to mark
 parts of the data structure for special meaning. All special markup provided by
 default is in the namespace `http://xml.zth.me/XMLStructReader`.
 
-### `textKey` attribute
+#### `textKey` attribute
 
 Specifies the array key for textual values. For example:
 
@@ -117,7 +119,7 @@ Array
 )
 ```
 
-### `listElement` attribute
+#### `listElement` attribute
 
 Specifies the element name to use as list item in a numeric array. For example:
 
@@ -152,7 +154,7 @@ Array
 
 Specify `listElement="*"` to indicate that all child elements are list items.
 
-### `asKey` attribute
+#### `asKey` attribute
 
 Specifies the key to use instead of the element name when adding to parent. For
 example:
@@ -176,7 +178,7 @@ Array
 )
 ```
 
-### `include` element
+#### `include` element
 
 Includes the XML document specified in `file` and replace the `include` element
 with the loaded array. For example:
