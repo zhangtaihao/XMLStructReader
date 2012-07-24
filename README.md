@@ -131,6 +131,30 @@ Array
 
 Specify `listElement="*"` to indicate that all child elements are list items.
 
+### `asKey` attribute
+
+Specifies the key to use instead of the element name when adding to parent. For
+example:
+
+```xml
+<root xmlns:x="http://xml.zth.me/XMLStructReader">
+  <element x:asKey="key">value</element>
+</root>
+```
+
+will be read as:
+
+```
+Array
+(
+    [root] => Array
+        (
+            [key] => value
+        )
+
+)
+```
+
 ### `include` element
 
 Includes the XML document specified in `file` and replace the `include` element
