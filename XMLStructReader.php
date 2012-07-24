@@ -21,6 +21,15 @@
 define('XML_STRUCT_READER_OPTION_TEXT_TRIM', 'textTrim');
 
 /**
+ * Whether to join all text values in an element.
+ *
+ * Possible values:
+ * - TRUE
+ * - FALSE (default)
+ */
+define('XML_STRUCT_READER_OPTION_TEXT_JOIN', 'textJoin');
+
+/**
  * Whether to skip empty chunks of text within elements. The text is measured
  * in its trimmed form.
  *
@@ -442,6 +451,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected function getDefaultOptions() {
     return array(
       XML_STRUCT_READER_OPTION_TEXT_TRIM => TRUE,
+      XML_STRUCT_READER_OPTION_TEXT_JOIN => FALSE,
       XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => TRUE,
       XML_STRUCT_READER_OPTION_INCLUDE_PATH => NULL,
       XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY => 'DefaultXMLStructReaderFactory',
