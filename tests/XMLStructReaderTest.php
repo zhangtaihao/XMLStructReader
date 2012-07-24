@@ -338,6 +338,15 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
           1 => '1',
         )),
       ),
+      // Test key substitution.
+      array(
+        '<root xmlns:x="%ns%">
+          <element x:asKey="key"><nested>value</nested></element>
+        </root>',
+        array('root' => array(
+          'key' => array('nested' => 'value'),
+        )),
+      ),
       // Test empty interpreters for completeness.
       array(
         '<element n:attribute="value" xmlns:n="urn:invalid">
