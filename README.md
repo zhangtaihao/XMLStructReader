@@ -24,6 +24,45 @@ $data = $factory->createReader('data.xml')->read();
 print_r($data);
 ```
 
+You can use XMLStructReader to read:
+
+```xml
+<configuration>
+  <database>
+    <dsn>mysql:host=localhost;dbname=testdb</dsn>
+    <username>testuser</username>
+    <password>testpass</password>
+  </database>
+  <cache>
+    <ttl>3600</ttl>
+  </cache>
+</configuration>
+```
+
+into the PHP array:
+
+```
+Array
+(
+    [configuration] => Array
+        (
+            [database] => Array
+                (
+                    [dsn] => mysql:host=localhost;dbname=testdb
+                    [username] => testuser
+                    [password] => testpass
+                )
+
+            [cache] => Array
+                (
+                    [ttl] => 3600
+                )
+
+        )
+
+)
+```
+
 ## Special XML markup
 
 The XML document can contain special annotations in the document tree to mark
