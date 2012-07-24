@@ -235,6 +235,29 @@ will read `other_document.xml` assuming all immediate child elements under
 it in the sub-document. You can use the values `php:null`, `php:true`, and
 `php:false` to respective indicate `NULL`, `TRUE`, and `FALSE`.
 
+### Options
+
+Options can be specified when creating a reader. For example:
+
+```php
+<?php
+$factory = new DefaultXMLStructReaderFactory();
+$options = array(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => FALSE);
+$data = $factory->createReader('data.xml', $options)->read();
+// Output data array.
+print_r($data);
+```
+
+#### `XML_STRUCT_READER_OPTION_TEXT_TRIM`
+
+#### `XML_STRUCT_READER_OPTION_TEXT_JOIN`
+
+#### `XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY`
+
+#### `XML_STRUCT_READER_OPTION_INCLUDE_PATH`
+
+#### `XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY`
+
 
 License
 -------
