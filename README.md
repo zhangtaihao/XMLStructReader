@@ -30,9 +30,28 @@ The XML document can contain special annotations in the document tree to mark
 parts of the data structure for special behavior. All special elements are in
 the XMLStructReader namespace (`http://xml.zth.me/XMLStructReader/`).
 
-Assuming the namespace prefix is `x:`, the following markup are available:
+### `textKey` attribute
 
-TODO
+Specifies the array key for textual values. For example:
+
+```xml
+<root xmlns:x="http://xml.zth.me/XMLStructReader/">
+  <element x:textKey="special key">special value</element>
+</root>
+```
+
+will be read as:
+
+```
+Array
+(
+    [root] => Array
+        (
+            [element] => special value
+        )
+
+)
+```
 
 ## License
 
