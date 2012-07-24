@@ -23,7 +23,9 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
           <x:include file="${TEST_ROOT}/include.xml"/>
         </root>',
         array('root' => array(
-          'included' => 'value',
+          'sub' => array(
+            'included' => 'value',
+          ),
         )),
       ),
       array(
@@ -33,7 +35,9 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
           </x:include>
         </root>',
         array('root' => array(
-          'included' => 'value',
+          'sub' => array(
+            'included' => 'value',
+          ),
         )),
       ),
       array(
@@ -60,10 +64,12 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
       // Test included context.
       array(
         '<root xmlns:x="%ns%">
-          <x:include file="${TEST_ROOT}/include.xml" x:listElement="included"/>
+          <x:include file="${TEST_ROOT}/include.xml" x:listElement="*"/>
         </root>',
         array('root' => array(
-          0 => 'value',
+          'sub' => array(
+            0 => 'value',
+          ),
         )),
       ),
     );
@@ -79,7 +85,9 @@ class XMLStructReaderIncludeTest extends XMLStructReaderTestCase {
     $data = $reader->read();
     $this->assertSame(array(
       'root' => array(
-        'included' => 'value',
+        'sub' => array(
+          'included' => 'value',
+        ),
       ),
     ), $data);
   }
