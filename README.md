@@ -129,6 +129,8 @@ Array
 )
 ```
 
+Specify `listElement="*"` to indicate that all child elements are list items.
+
 ### `include` element
 
 Includes the XML document specified in `file` and replace the `include` element
