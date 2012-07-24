@@ -1136,6 +1136,10 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
       if (isset($context['textKey'])) {
         unset($context['textKey']);
       }
+      // Remove substitute key context for single use.
+      if (isset($context['asKey'])) {
+        unset($context['asKey']);
+      }
     }
   }
 
@@ -1215,7 +1219,8 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     }
     // Add data to parent.
     if (isset($this->parent) && NULL !== $data = $this->getData()) {
-      $this->parent->addData($this->name, $data);
+      $key = isset($this->context['asKey']) ? $this->context['asKey'] : $this->name;
+      $this->parent->addData($key, $data);
     }
   }
 
