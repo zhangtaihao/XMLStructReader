@@ -71,6 +71,17 @@ Array
 )
 ```
 
+### Quirks
+
+#### Mixed text/element content
+
+Whenever an element contains both child elements and textual content, the text
+value is ignored.
+
+The exception to this rule is through the use of the `textKey` annotation on the
+parent element to specify a key for the text value (see
+[`textKey` attribute](#textkey-attribute) in Advanced usage).
+
 
 Special XML markup
 ------------------
