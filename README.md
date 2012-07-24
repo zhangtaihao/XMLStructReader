@@ -184,7 +184,9 @@ specifying special attributes on the `include` element. For example:
 ```
 
 will read `other_document.xml` assuming all immediate child elements under
-`<other-structure>` are list items.
+`<other-structure>` are list items. To force a certain context value, override
+it in the sub-document. You can use the values `php:null`, `php:true`, and
+`php:false` to respective indicate `NULL`, `TRUE`, and `FALSE`.
 
 ## License
 
