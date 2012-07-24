@@ -12,7 +12,7 @@
  */
 
 /**
- * Whether to trim ends of element text chunks (of whitespace).
+ * Whether to trim whitespace from ends of contiguous chunks of element text.
  *
  * Possible values:
  * - TRUE (default)
