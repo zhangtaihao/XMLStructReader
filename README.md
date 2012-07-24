@@ -28,7 +28,7 @@ You can use XMLStructReader to read:
 
 ```xml
 <configuration>
-  <database>
+  <database provider="pdo">
     <dsn>mysql:host=localhost;dbname=testdb</dsn>
     <username>testuser</username>
     <password>testpass</password>
@@ -48,6 +48,7 @@ Array
         (
             [database] => Array
                 (
+                    [provider] => pdo
                     [dsn] => mysql:host=localhost;dbname=testdb
                     [username] => testuser
                     [password] => testpass
