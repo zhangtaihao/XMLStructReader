@@ -1,10 +1,13 @@
-# XMLStructReader: XML structured array parser
+XMLStructReader: XML structured array parser
+============================================
 
 Repository: <http://github.com/zhangtaihao/XMLStructReader>
 
 XMLStructReader is a PHP utility for reading XML into a PHP structured array.
 
-## Requirements
+
+Requirements
+------------
 
 The library uses the built-in XML Parser for reading XML. PHP requirements
 include:
@@ -12,7 +15,9 @@ include:
 * PHP 5.1
 * SPL extension (enabled by default)
 
-## Basic usage
+
+Basic usage
+-----------
 
 To parse XML files into a PHP array, create a reader factory and use it to
 create a reader given file path, stream resource, or an SplFileObject. Example:
@@ -66,7 +71,9 @@ Array
 )
 ```
 
-## Special XML markup
+
+Special XML markup
+------------------
 
 The XML document can contain special annotations in the document tree to mark
 parts of the data structure for special meaning. All special markup provided by
@@ -215,7 +222,9 @@ will read `other_document.xml` assuming all immediate child elements under
 it in the sub-document. You can use the values `php:null`, `php:true`, and
 `php:false` to respective indicate `NULL`, `TRUE`, and `FALSE`.
 
-## License
+
+License
+-------
 
 This library is licensed under the General Public License, version 3. For full
 license details, see LICENSE.txt.

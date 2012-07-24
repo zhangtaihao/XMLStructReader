@@ -1,4 +1,5 @@
-# Testing
+Testing
+=======
 
 This library is tested using:
 
