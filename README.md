@@ -67,14 +67,14 @@ Array
 
 The XML document can contain special annotations in the document tree to mark
 parts of the data structure for special meaning. All special markup provided by
-default is in the namespace `http://xml.zth.me/XMLStructReader/`.
+default is in the namespace `http://xml.zth.me/XMLStructReader`.
 
 ### `textKey` attribute
 
 Specifies the array key for textual values. For example:
 
 ```xml
-<root xmlns:x="http://xml.zth.me/XMLStructReader/">
+<root xmlns:x="http://xml.zth.me/XMLStructReader">
   <element x:textKey="special key">special value</element>
 </root>
 ```
@@ -86,7 +86,11 @@ Array
 (
     [root] => Array
         (
-            [element] => special value
+            [element] => Array
+                (
+                    [special key] => special value
+                )
+
         )
 
 )
