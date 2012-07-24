@@ -96,6 +96,39 @@ Array
 )
 ```
 
+### `listElement` attribute
+
+Specifies the element name to use as list item in a numeric array. For example:
+
+```xml
+<root xmlns:x="http://xml.zth.me/XMLStructReader">
+  <list x:listElement="item">
+    <item>a</item>
+    <item>b</item>
+    <item>c</item>
+  </list>
+</root>
+```
+
+will be read as:
+
+```
+Array
+(
+    [root] => Array
+        (
+            [list] => Array
+                (
+                    [0] => a
+                    [1] => b
+                    [2] => c
+                )
+
+        )
+
+)
+```
+
 ## License
 
 This library is licensed under the General Public License, version 3. For full
