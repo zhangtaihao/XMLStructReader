@@ -1,5 +1,7 @@
 # XMLStructReader: XML structured array parser
 
+Repository: <http://github.com/zhangtaihao/XMLStructReader>
+
 XMLStructReader is a PHP utility for reading XML into a PHP structured array.
 
 ## Requirements
