@@ -1127,11 +1127,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // Track the first root context.
-    if (!empty($context['root'])) {
-      unset($context['root']);
-    }
-    else {
+    if (!$this->isRoot()) {
       // Remove list element context for single use.
       if (isset($context['listElement'])) {
         unset($context['listElement']);
@@ -1141,6 +1137,14 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
         unset($context['textKey']);
       }
     }
+  }
+
+  /**
+   * Determines whether this element is root.
+   * @return bool
+   */
+  public function isRoot() {
+    return !is_object($this->parent) || $this->parent instanceof XMLStructReader_DefaultRootContainer;
   }
 
   /**
@@ -1501,8 +1505,22 @@ class XMLStructReader_DefaultRootContainer extends XMLStructReader_DefaultElemen
    *   Reader context.
    */
   protected function initializeContext($context) {
-    // Set up root element.
-    $context['root'] = TRUE;
+    // Skip context preparation.
+  }
+
+  /**
+   * Gets the element data.
+   *
+   * @return mixed
+   *   Element data.
+   */
+  public function getData() {
+    // Ignore list element when processing root.
+    if (isset($this->context['listElement'])) {
+      unset($this->context['listElement']);
+    }
+
+    return parent::getData();
   }
 }
 
