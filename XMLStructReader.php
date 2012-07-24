@@ -862,6 +862,11 @@ class XMLStructReaderContext extends ArrayObject {
   public function __construct(array $data = array()) {
     parent::__construct($data, ArrayObject::ARRAY_AS_PROPS);
   }
+
+  public function offsetExists($index) {
+    // Check for NULL value for consistency with isset().
+    return parent::offsetExists($index) && !is_null($this[$index]);
+  }
 }
 
 /**
