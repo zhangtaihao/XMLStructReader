@@ -1307,6 +1307,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     if (!empty($dataValues)) {
       // Use collected values as data.
       $data = array();
+      $mergedValues = array();
       $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
       foreach ($dataValues as $item) {
         // Add as list item.
@@ -1315,8 +1316,32 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
         }
         // Add as struct value.
         else {
-          $data[$item['key']] = $item['data'];
+          switch ($this->reader->getOption(XML_STRUCT_READER_OPTION_KEY_CONFLICT)) {
+            case XML_STRUCT_READER_CONFLICT_REPLACE:
+              // Set value.
+              $data[$item['key']] = $item['data'];
+              break;
+
+            case XML_STRUCT_READER_CONFLICT_MERGE:
+              // Set value if first.
+              if (!isset($data[$item['key']])) {
+                $data[$item['key']] = $item['data'];
+              }
+              // Append to merged values.
+              else {
+                if (!isset($mergedValues[$item['key']])) {
+                  // Push first value to merged values.
+                  $mergedValues[$item['key']] = array($data[$item['key']]);
+                }
+                $mergedValues[$item['key']][] = $item['data'];
+              }
+              break;
+          }
         }
+      }
+      // Push merged values back in.
+      foreach ($mergedValues as $key => $values) {
+        $data[$key] = $values;
       }
     }
     elseif (isset($elementValue) && ($elementValue !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY))) {
