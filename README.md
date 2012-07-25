@@ -291,17 +291,15 @@ Possible values:
 
 Default base path for included file names.
 
-Possible values:
-
-  Any valid directory path string. *Default*: `.` (current working directory)
+Possible values:  Any valid directory path string. *Default*: `.` (current
+working directory)
 
 #### `XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY`
 
 Factory class to create reader for included files.
 
-Possible values:
-
-  Any valid findable class name. *Default*: `DefaultXMLStructReaderFactory`
+Possible values:  Any valid findable class name. *Default*:
+`DefaultXMLStructReaderFactory`
 
 
 License
