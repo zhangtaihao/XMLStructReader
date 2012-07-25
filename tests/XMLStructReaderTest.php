@@ -236,7 +236,12 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @dataProvider readDataProvider
    */
   public function testReadData($xml, $expectedValue, $options = NULL) {
-    $this->doTestDefaultRead($xml, $expectedValue, isset($options) ? $options : array());
+    $options = isset($options) ? $options : array();
+    $options += array(
+      // Test data using replace.
+      XML_STRUCT_READER_OPTION_KEY_CONFLICT => XML_STRUCT_READER_CONFLICT_REPLACE,
+    );
+    $this->doTestDefaultRead($xml, $expectedValue, $options);
   }
 
   public function readDataProvider() {
