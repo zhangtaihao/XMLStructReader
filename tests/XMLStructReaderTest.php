@@ -235,8 +235,8 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
    * @depends testBasicReaderOptions
    * @dataProvider readDataProvider
    */
-  public function testReadData($xml, $expectedValue) {
-    $this->doTestDefaultRead($xml, $expectedValue);
+  public function testReadData($xml, $expectedValue, $options = NULL) {
+    $this->doTestDefaultRead($xml, $expectedValue, isset($options) ? $options : array());
   }
 
   public function readDataProvider() {
