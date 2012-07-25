@@ -256,6 +256,8 @@ $data = $factory->createReader('data.xml', $options)->read();
 print_r($data);
 ```
 
+#### `XML_STRUCT_READER_OPTION_KEY_CONFLICT`
+
 #### `XML_STRUCT_READER_OPTION_TEXT_TRIM`
 
 #### `XML_STRUCT_READER_OPTION_TEXT_JOIN`
