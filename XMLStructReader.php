@@ -1256,7 +1256,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     if (isset($this->textValue)) {
       // Collect keyed, unjoined element value.
       if (isset($this->context['textKey']) && !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
-        $data = $this->getTextValue(array($this->textValue));
+        $data = $this->prepareTextValue(array($this->textValue));
         $this->addData($this->context['textKey'], $data);
       }
       // Empty current text value reference.
@@ -1284,77 +1284,147 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Element data.
    */
   public function getData() {
-    $dataValues = $this->data;
-    // Collect text values.
-    $elementValue = NULL;
-    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
-      $textValue = $this->getTextValue($this->textValues);
-      // Use keyed text as data value.
-      if (isset($this->context['textKey'])) {
-        $dataValues[] = array(
-          'key' => $this->context['textKey'],
-          'data' => $textValue,
-        );
-      }
-      // Use unkeyed text as element value.
-      else {
-        $elementValue = $textValue;
-      }
-    }
+    $dataValues = $this->getElementData();
 
-    // Build data to return.
+    // Prepare data to return.
+    $dataValues = $this->prepareData($dataValues);
+
+    return $dataValues;
+  }
+
+  /**
+   * Prepares built data for return.
+   *
+   * @param mixed $dataValues
+   *   Built element data.
+   * @return mixed
+   *   Data to return as value.
+   */
+  protected function prepareData($dataValues) {
     $data = NULL;
-    if (!empty($dataValues)) {
-      // Use collected values as data.
-      $data = array();
-      $mergedValues = array();
-      $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
-      foreach ($dataValues as $item) {
-        // Add as list item.
-        if ($listElement == '*' || $listElement === $item['key']) {
-          $data[] = $item['data'];
-        }
-        // Add as struct value.
-        else {
-          switch ($this->reader->getOption(XML_STRUCT_READER_OPTION_KEY_CONFLICT)) {
-            case XML_STRUCT_READER_CONFLICT_REPLACE:
-              // Set value.
-              $data[$item['key']] = $item['data'];
-              break;
-
-            case XML_STRUCT_READER_CONFLICT_MERGE:
-              // Set value if first.
-              if (!isset($data[$item['key']])) {
-                $data[$item['key']] = $item['data'];
-              }
-              // Append to merged values.
-              else {
-                if (!isset($mergedValues[$item['key']])) {
-                  // Push first value to merged values.
-                  $mergedValues[$item['key']] = array($data[$item['key']]);
-                }
-                $mergedValues[$item['key']][] = $item['data'];
-              }
-              break;
-          }
-        }
-      }
-      // Push merged values back in.
-      foreach ($mergedValues as $key => $values) {
-        $data[$key] = $values;
-      }
+    if (is_array($dataValues) && NULL !== $preparedData = $this->prepareArrayData($dataValues)) {
+      $data = $preparedData;
     }
-    elseif (isset($elementValue) && ($elementValue !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY))) {
+    elseif (is_string($dataValues) && NULL !== $preparedData = $this->prepareStringData($dataValues)) {
       // Use element value as data.
-      $data = $elementValue;
+      $data = $preparedData;
     }
     return $data;
   }
 
   /**
+   * Prepares array data.
+   *
+   * @param array $dataValues
+   * @return mixed
+   */
+  protected function prepareArrayData(array $dataValues) {
+    $data = array();
+
+    // Use collected values as data.
+    $mergedValues = array();
+    $listElement = isset($this->context['listElement']) ? $this->context['listElement'] : NULL;
+    foreach ($dataValues as $item) {
+      // Add as list item.
+      if ($listElement == '*' || $listElement === $item['key']) {
+        $data[] = $item['data'];
+      }
+      // Add as struct value.
+      else {
+        switch ($this->reader->getOption(XML_STRUCT_READER_OPTION_KEY_CONFLICT)) {
+          case XML_STRUCT_READER_CONFLICT_REPLACE:
+            // Set value.
+            $data[$item['key']] = $item['data'];
+            break;
+
+          case XML_STRUCT_READER_CONFLICT_MERGE:
+            // Set value if first.
+            if (!isset($data[$item['key']])) {
+              $data[$item['key']] = $item['data'];
+            }
+            // Append to merged values.
+            else {
+              if (!isset($mergedValues[$item['key']])) {
+                // Push first value to merged values.
+                $mergedValues[$item['key']] = array($data[$item['key']]);
+              }
+              $mergedValues[$item['key']][] = $item['data'];
+            }
+            break;
+        }
+      }
+    }
+    // Push merged values back in.
+    foreach ($mergedValues as $key => $values) {
+      $data[$key] = $values;
+    }
+
+    return $data;
+  }
+
+  /**
+   * Prepares text data.
+   *
+   * @param array $dataValue
+   * @return mixed
+   */
+  protected function prepareStringData($dataValue) {
+    $data = NULL;
+    if ($dataValue !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY)) {
+      // Use element value as data.
+      $data = $dataValue;
+    }
+    return $data;
+  }
+
+  /**
+   * Gets unprocessed element data values.
+   *
+   * @return array|string
+   *   An array of value sets (each with a pair of 'key' and 'data'), or a text
+   *   value if element value is flat.
+   */
+  protected function getElementData() {
+    $dataValues = $this->data;
+    $elementValue = $this->getElementValue();
+
+    // Use keyed text as data value.
+    if (isset($this->context['textKey']) && isset($elementValue)) {
+      $dataValues[] = array(
+        'key' => $this->context['textKey'],
+        'data' => $elementValue,
+      );
+    }
+
+    // Return data as value sets.
+    if (!empty($dataValues)) {
+      return $dataValues;
+    }
+    // Return data as flat value.
+    else {
+      return $elementValue;
+    }
+  }
+
+  /**
+   * Gets element value.
+   *
+   * @return string|null
+   *   Element text value, or NULL if none applicable (e.g. text is not joined).
+   */
+  protected function getElementValue() {
+    $elementValue = NULL;
+    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
+      // Collect text values.
+      $elementValue = $this->prepareTextValue($this->textValues);
+    }
+    return $elementValue;
+  }
+
+  /**
    * Processes and returns text value.
    */
-  protected function getTextValue(array $values) {
+  protected function prepareTextValue(array $values) {
     $result = '';
     foreach ($values as $value) {
       // Trim value.
