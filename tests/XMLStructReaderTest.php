@@ -228,6 +228,17 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
         'element2' => 'test1test2',
       ),
     ), $data);
+
+    // Test join option.
+    $reader = new DefaultXMLStructReader($this->createXMLDelegate($xml), array(
+      XML_STRUCT_READER_OPTION_TEXT_JOIN => FALSE,
+    ));
+    $data = $reader->read();
+    $this->assertSame(array(
+      'root' => array(
+        'element2' => 'test2',
+      ),
+    ), $data);
   }
 
   /**
