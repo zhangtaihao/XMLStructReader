@@ -970,7 +970,7 @@ interface XMLStructReader_ElementInterpreter {
    * @param mixed $data
    *   Data to add.
    */
-  public function addData($key, $data);
+  public function addElementData($key, $data);
 
   /**
    * Adds element attribute.
@@ -1174,7 +1174,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    * @param mixed $data
    *   Data to add.
    */
-  public function addData($key, $data) {
+  public function addElementData($key, $data) {
     $this->data[] = array(
       'key' => $key,
       'data' => $data,
@@ -1217,7 +1217,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     if ($this->trimLeft && $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
       $data = ltrim($data);
       // Only trim left once until the flag is set again.
-      // See self::addData() for trim right.
+      // See self::addElementData() for trim right.
       $this->trimLeft = FALSE;
     }
     // Append text to value.
@@ -1235,7 +1235,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     // Add data to parent.
     if (isset($this->parent) && NULL !== $data = $this->getData()) {
       $key = isset($this->context['asKey']) ? $this->context['asKey'] : $this->name;
-      $this->parent->addData($key, $data);
+      $this->parent->addElementData($key, $data);
     }
   }
 
@@ -1392,7 +1392,7 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
    * @param mixed $data
    *   Data to add.
    */
-  public function addData($key, $data) {
+  public function addElementData($key, $data) {
     $this->metadata[$key] = $data;
   }
 
@@ -1428,7 +1428,7 @@ class XMLStructReader_StructInclude implements XMLStructReader_ElementInterprete
       // Add included data (using the included root element) to parent.
       $includedData = reset($data);
       $key = key($data);
-      $this->parent->addData($key, $includedData);
+      $this->parent->addElementData($key, $includedData);
     }
   }
 
