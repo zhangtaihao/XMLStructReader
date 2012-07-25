@@ -12,7 +12,8 @@
  */
 
 /**
- * Whether to trim whitespace from ends of contiguous chunks of element text.
+ * Whether to trim whitespace from ends of contiguous chunks of element text
+ * (i.e. not interrupted by an element).
  *
  * Possible values:
  * - TRUE (default)
@@ -24,8 +25,8 @@ define('XML_STRUCT_READER_OPTION_TEXT_TRIM', 'textTrim');
  * Whether to join all text values in an element.
  *
  * Possible values:
- * - TRUE
- * - FALSE (default)
+ * - TRUE (default)
+ * - FALSE
  */
 define('XML_STRUCT_READER_OPTION_TEXT_JOIN', 'textJoin');
 
@@ -451,7 +452,7 @@ class DefaultXMLStructReader extends XMLStructReader {
   protected function getDefaultOptions() {
     return array(
       XML_STRUCT_READER_OPTION_TEXT_TRIM => TRUE,
-      XML_STRUCT_READER_OPTION_TEXT_JOIN => FALSE,
+      XML_STRUCT_READER_OPTION_TEXT_JOIN => TRUE,
       XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => TRUE,
       XML_STRUCT_READER_OPTION_INCLUDE_PATH => NULL,
       XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY => 'DefaultXMLStructReaderFactory',
@@ -1097,22 +1098,22 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   protected $attributes = array();
 
   /**
-   * Element text value.
+   * Element text values.
+   * @var string[]
+   */
+  protected $textValues = array();
+
+  /**
+   * Current element text value (by reference).
    * @var string
    */
-  protected $value = '';
+  protected $textValue;
 
   /**
    * Element children data.
    * @var array
    */
   protected $data = array();
-
-  /**
-   * Flag to trim left.
-   * @var boolean
-   */
-  private $trimLeft = TRUE;
 
   /**
    * Creates an element interpreter.
@@ -1172,20 +1173,17 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    * @param string $key
    *   Data key, e.g. child element name.
    * @param mixed $data
-   *   Data to add.
+   *   Data to add, NULL if element is empty.
    */
   public function addElementData($key, $data) {
-    $this->data[] = array(
-      'key' => $key,
-      'data' => $data,
-    );
-    // Right trim the element value before the child element.
-    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
-      $this->value = rtrim($this->value);
-      // Mark the next character data for left trim.
-      // See self::addCharacterData() for left trim.
-      $this->trimLeft = TRUE;
+    if (isset($data)) {
+      $this->data[] = array(
+        'key' => $key,
+        'data' => $data,
+      );
     }
+    // Mark the end of a contiguous textual chunk.
+    $this->endCharacterData();
   }
 
   /**
@@ -1213,29 +1211,42 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     if (!empty($optionTextSkipEmpty) && strlen(trim($data)) == 0) {
       return;
     }
-    // Trim left.
-    if ($this->trimLeft && $this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
-      $data = ltrim($data);
-      // Only trim left once until the flag is set again.
-      // See self::addElementData() for trim right.
-      $this->trimLeft = FALSE;
+    // Append text value.
+    if (!isset($this->textValue)) {
+      // Push to the next textual value.
+      $this->textValue = &$this->textValues[];
+      $this->textValue = '';
     }
-    // Append text to value.
-    $this->value .= $data;
+    $this->textValue .= $data;
+  }
+
+  /**
+   * Finishes a chunk of character data.
+   */
+  protected function endCharacterData() {
+    if (isset($this->textValue)) {
+      // Collect keyed, unjoined element value.
+      if (isset($this->context['textKey']) && !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
+        $dataValues[] = array(
+          'key' => $this->context['textKey'],
+          'data' => $this->getTextValue(array($this->textValue)),
+        );
+      }
+      // Empty current text value reference.
+      unset($this->textValue);
+    }
   }
 
   /**
    * Handles the element (complete with data) as it ends.
    */
   public function processElement() {
-    // Right trim the element value before the end.
-    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
-      $this->value = rtrim($this->value);
-    }
+    // Mark the end of a contiguous textual chunk.
+    $this->endCharacterData();
     // Add data to parent.
-    if (isset($this->parent) && NULL !== $data = $this->getData()) {
+    if (isset($this->parent)) {
       $key = isset($this->context['asKey']) ? $this->context['asKey'] : $this->name;
-      $this->parent->addElementData($key, $data);
+      $this->parent->addElementData($key, $this->getData());
     }
   }
 
@@ -1256,12 +1267,21 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     }
     // Collect element data.
     $dataValues = array_merge($dataValues, $this->data);
-    // Collect keyed element value.
-    if (isset($this->context['textKey']) && isset($this->value)) {
-      $dataValues[] = array(
-        'key' => $this->context['textKey'],
-        'data' => $this->value,
-      );
+    // Collect text values.
+    $elementValue = NULL;
+    if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
+      $textValue = $this->getTextValue($this->textValues);
+      // Use keyed text as data value.
+      if (isset($this->context['textKey'])) {
+        $dataValues[] = array(
+          'key' => $this->context['textKey'],
+          'data' => $textValue,
+        );
+      }
+      // Use unkeyed text as element value.
+      else {
+        $elementValue = $textValue;
+      }
     }
 
     // Build data to return.
@@ -1281,11 +1301,27 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
         }
       }
     }
-    elseif ($this->value !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY)) {
+    elseif (isset($elementValue) && ($elementValue !== '' || !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY))) {
       // Use element value as data.
-      $data = $this->value;
+      $data = $elementValue;
     }
     return $data;
+  }
+
+  /**
+   * Processes and returns text value.
+   */
+  protected function getTextValue(array $values) {
+    $result = '';
+    foreach ($values as $value) {
+      // Trim value.
+      if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_TRIM)) {
+        $value = trim($value);
+      }
+      // Append value.
+      $result .= $value;
+    }
+    return $result;
   }
 }
 
