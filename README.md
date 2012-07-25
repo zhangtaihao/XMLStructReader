@@ -258,6 +258,15 @@ print_r($data);
 
 #### `XML_STRUCT_READER_OPTION_KEY_CONFLICT`
 
+What to do for values with conflicting keys.
+
+**Possible values:**
+
+* `XML_STRUCT_READER_CONFLICT_REPLACE` *(default)*: a latter value replaces the
+  former.
+* `XML_STRUCT_READER_CONFLICT_MERGE`: when multiple values with the same key
+  exists, values are merged into an array with the common key.
+
 #### `XML_STRUCT_READER_OPTION_TEXT_TRIM`
 
 Whether to trim whitespace from ends of contiguous chunks of element text (i.e.
