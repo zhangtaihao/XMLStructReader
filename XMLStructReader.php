@@ -12,6 +12,15 @@
  */
 
 /**
+ * What to do when keys conflict.
+ *
+ * Possible values:
+ * - XML_STRUCT_READER_CONFLICT_REPLACE (default)
+ * - XML_STRUCT_READER_CONFLICT_MERGE
+ */
+define('XML_STRUCT_READER_OPTION_KEY_CONFLICT', 'keyConflict');
+
+/**
  * Whether to trim whitespace from ends of contiguous chunks of element text
  * (i.e. not interrupted by an element).
  *
@@ -55,6 +64,16 @@ define('XML_STRUCT_READER_OPTION_INCLUDE_PATH', 'includePath');
  * - Any valid findable class name. Default: DefaultXMLStructReaderFactory
  */
 define('XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY', 'includeReaderFactory');
+
+/**
+ * Key conflict option value representing 'merge'.
+ */
+define('XML_STRUCT_READER_CONFLICT_MERGE', 'merge');
+
+/**
+ * Key conflict option value representing 'replace'.
+ */
+define('XML_STRUCT_READER_CONFLICT_REPLACE', 'replace');
 
 /**
  * Base implementation of XML structured array parser.
@@ -451,6 +470,7 @@ class DefaultXMLStructReader extends XMLStructReader {
    */
   protected function getDefaultOptions() {
     return array(
+      XML_STRUCT_READER_OPTION_KEY_CONFLICT => XML_STRUCT_READER_CONFLICT_REPLACE,
       XML_STRUCT_READER_OPTION_TEXT_TRIM => TRUE,
       XML_STRUCT_READER_OPTION_TEXT_JOIN => TRUE,
       XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY => TRUE,
