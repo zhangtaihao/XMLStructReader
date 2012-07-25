@@ -77,8 +77,8 @@ Array
 
 When an element contains more than one value with the same key, generally the
 latter value will overwrite the former. This quirk covers both attribute and
-element names. Where [text keys](#textkey-attribute) are used and values are not
-[joined](#xml_struct_reader_option_text_join), this quirk will also apply to
+element names. Where [text keys][textKey] are used and values are not [joined]
+[option_text_join], this quirk will also apply to
 textual values.
 
 #### Mixed text/element content
@@ -87,8 +87,8 @@ Whenever an element contains both child elements and textual content, the text
 value is ignored.
 
 The exception to this rule is through the use of the `textKey` annotation on the
-parent element to specify a key for the text value (see
-[`textKey` attribute](#textkey-attribute) in Advanced usage).
+parent element to specify a key for the text value (see [`textKey` attribute]
+[textKey] in Advanced usage).
 
 
 Advanced usage
@@ -226,7 +226,7 @@ Array
 Note that PHP will attempt to find the file path relative to the current working
 directory. To change this behavior, specify an alternative directory for finding
 included files using the option [`XML_STRUCT_READER_OPTION_INCLUDE_PATH`]
-(#xml_struct_reader_option_include_path) when creating a reader.
+[option_include_path] when creating a reader.
 
 You can also use defined constants in the file path with `${PHP_CONSTANT}` for
 the constant `PHP_CONSTANT`. The constant must be defined prior to reading.
@@ -277,8 +277,8 @@ Whether to join all text chunks in an element.
 * `TRUE` *(default)*
 * `FALSE`
 
-Note that `FALSE` means only the last chunk is in effect if conflicting values
-are replaced.
+Note that `FALSE` means only the last chunk is in effect if [conflicting values]
+[option_key_conflict] are replaced.
 
 #### `XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY`
 
@@ -310,3 +310,9 @@ License
 
 This library is licensed under the General Public License, version 3. For full
 license details, see LICENSE.txt.
+
+
+[textKey]: #textkey-attribute
+[option_key_conflict]: #xml_struct_reader_option_key_conflict
+[option_text_join]: #xml_struct_reader_option_text_join
+[option_include_path]: #xml_struct_reader_option_include_path
