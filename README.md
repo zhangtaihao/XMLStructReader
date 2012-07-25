@@ -73,6 +73,14 @@ Array
 
 ### Quirks
 
+#### Conflicting array keys
+
+When an element contains more than one value with the same key, generally the
+latter value will overwrite the former. This quirk covers both attribute and
+element names. Where [text keys](#textkey-attribute) are used and values are not
+[joined](#xml_struct_reader_option_text_join), this quirk will also apply to
+textual values.
+
 #### Mixed text/element content
 
 Whenever an element contains both child elements and textual content, the text
