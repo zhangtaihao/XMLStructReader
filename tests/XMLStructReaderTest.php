@@ -370,6 +370,50 @@ class XMLStructReaderTest extends XMLStructReaderTestCase {
         </element>',
         array('element' => 'value'),
       ),
+      // Test merging option.
+      array(
+        '<element>
+          <key>value 1</key>
+          <key>value 2</key>
+        </element>',
+        array('element' => array(
+          'key' => array(
+            'value 1',
+            'value 2',
+          ),
+        )),
+        array(XML_STRUCT_READER_OPTION_KEY_CONFLICT => XML_STRUCT_READER_CONFLICT_MERGE),
+      ),
+      array(
+        '<element>
+          <key>value 1</key>
+          <key><subkey>value 2</subkey></key>
+        </element>',
+        array('element' => array(
+          'key' => array(
+            'value 1',
+            array('subkey' => 'value 2'),
+          ),
+        )),
+        array(XML_STRUCT_READER_OPTION_KEY_CONFLICT => XML_STRUCT_READER_CONFLICT_MERGE),
+      ),
+      array(
+        '<root xmlns:x="%ns%" x:textKey="key">
+          value 1
+          <empty/>
+          value 2
+        </root>',
+        array('root' => array(
+          'key' => array(
+            'value 1',
+            'value 2',
+          ),
+        )),
+        array(
+          XML_STRUCT_READER_OPTION_KEY_CONFLICT => XML_STRUCT_READER_CONFLICT_MERGE,
+          XML_STRUCT_READER_OPTION_TEXT_JOIN => FALSE,
+        ),
+      ),
     );
   }
 
