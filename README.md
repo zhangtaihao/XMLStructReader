@@ -5,6 +5,10 @@ Repository: <http://github.com/zhangtaihao/XMLStructReader>
 
 XMLStructReader is a PHP utility for reading XML into a PHP structured array.
 
+It is designed as an extensible framework of interpreters for reading elements
+and attributes into an array. See EXTENDING.md for a guide to extending the
+framework with customized behaviors.
+
 
 Requirements
 ------------
