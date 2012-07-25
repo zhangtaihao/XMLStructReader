@@ -263,7 +263,8 @@ What to do for values with conflicting keys.
 **Possible values:**
 
 * `XML_STRUCT_READER_CONFLICT_REPLACE` *(default)*: a latter value replaces the
-  former.
+  former. Note that, when the [text key][textKey] is used while [joining text]
+  [option_text_join], the joined text value is inserted at the end.
 * `XML_STRUCT_READER_CONFLICT_MERGE`: when multiple values with the same key
   exists, values are merged into an array with the common key.
 
