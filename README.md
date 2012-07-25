@@ -270,12 +270,15 @@ not interrupted by an element).
 
 #### `XML_STRUCT_READER_OPTION_TEXT_JOIN`
 
-Whether to join all text values in an element.
+Whether to join all text chunks in an element.
 
 **Possible values:**
 
 * `TRUE` *(default)*
 * `FALSE`
+
+Note that `FALSE` means only the last chunk is in effect if conflicting values
+are replaced.
 
 #### `XML_STRUCT_READER_OPTION_TEXT_SKIP_EMPTY`
 
