@@ -263,7 +263,7 @@ print_r($data);
 Whether to trim whitespace from ends of contiguous chunks of element text (i.e.
 not interrupted by an element).
 
-Possible values:
+**Possible values:**
 
 * `TRUE` *(default)*
 * `FALSE`
@@ -272,7 +272,7 @@ Possible values:
 
 Whether to join all text values in an element.
 
-Possible values:
+**Possible values:**
 
 * `TRUE` *(default)*
 * `FALSE`
@@ -282,7 +282,7 @@ Possible values:
 Whether to skip empty chunks of text within elements. The text is measured in
 its trimmed form.
 
-Possible values:
+**Possible values:**
 
 * `TRUE` *(default)*
 * `FALSE`
@@ -291,14 +291,14 @@ Possible values:
 
 Default base path for included file names.
 
-Possible values:  Any valid directory path string. *Default*: `.` (current
+**Possible values:**  Any valid directory path string. *Default*: `.` (current
 working directory)
 
 #### `XML_STRUCT_READER_OPTION_INCLUDE_READER_FACTORY`
 
 Factory class to create reader for included files.
 
-Possible values:  Any valid findable class name. *Default*:
+**Possible values:**  Any valid findable class name. *Default*:
 `DefaultXMLStructReaderFactory`
 
 
