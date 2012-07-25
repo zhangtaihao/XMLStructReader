@@ -1188,6 +1188,16 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   }
 
   /**
+   * Adds data to element.
+   */
+  protected function addData($key, $data) {
+    $this->data[] = array(
+      'key' => $key,
+      'data' => $data,
+    );
+  }
+
+  /**
    * Adds data for the element.
    *
    * @param string $key
@@ -1197,10 +1207,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    */
   public function addElementData($key, $data) {
     if (isset($data)) {
-      $this->data[] = array(
-        'key' => $key,
-        'data' => $data,
-      );
+      $this->addData($key, $data);
     }
     // Mark the end of a contiguous textual chunk.
     $this->endCharacterData();
@@ -1217,6 +1224,8 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
   public function addAttribute($name, $value) {
     // Add attribute value.
     $this->attributes[$name] = $value;
+    // Collect attribute as data.
+    $this->addData($name, $value);
   }
 
   /**
@@ -1247,10 +1256,8 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
     if (isset($this->textValue)) {
       // Collect keyed, unjoined element value.
       if (isset($this->context['textKey']) && !$this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
-        $dataValues[] = array(
-          'key' => $this->context['textKey'],
-          'data' => $this->getTextValue(array($this->textValue)),
-        );
+        $data = $this->getTextValue(array($this->textValue));
+        $this->addData($this->context['textKey'], $data);
       }
       // Empty current text value reference.
       unset($this->textValue);
@@ -1277,16 +1284,7 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Element data.
    */
   public function getData() {
-    $dataValues = array();
-    // Collect attributes as data.
-    foreach ($this->attributes as $key => $value) {
-      $dataValues[] = array(
-        'key' => $key,
-        'data' => $value,
-      );
-    }
-    // Collect element data.
-    $dataValues = array_merge($dataValues, $this->data);
+    $dataValues = $this->data;
     // Collect text values.
     $elementValue = NULL;
     if ($this->reader->getOption(XML_STRUCT_READER_OPTION_TEXT_JOIN)) {
