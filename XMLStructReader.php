@@ -1206,11 +1206,12 @@ class XMLStructReader_DefaultElement implements XMLStructReader_ElementInterpret
    *   Data to add, NULL if element is empty.
    */
   public function addElementData($key, $data) {
+    // Mark the end of a contiguous textual chunk.
+    $this->endCharacterData();
+    // Add element data.
     if (isset($data)) {
       $this->addData($key, $data);
     }
-    // Mark the end of a contiguous textual chunk.
-    $this->endCharacterData();
   }
 
   /**
