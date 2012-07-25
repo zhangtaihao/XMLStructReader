@@ -225,8 +225,8 @@ Array
 
 Note that PHP will attempt to find the file path relative to the current working
 directory. To change this behavior, specify an alternative directory for finding
-included files using the option `XML_STRUCT_READER_OPTION_INCLUDE_PATH` when
-creating a reader.
+included files using the option [`XML_STRUCT_READER_OPTION_INCLUDE_PATH`]
+(#xml_struct_reader_option_include_path) when creating a reader.
 
 You can also use defined constants in the file path with `${PHP_CONSTANT}` for
 the constant `PHP_CONSTANT`. The constant must be defined prior to reading.
